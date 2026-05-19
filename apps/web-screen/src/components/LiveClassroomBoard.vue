@@ -18,6 +18,10 @@ const unansweredParticipants = computed(() => props.participants.filter((item) =
 function optionPercent(key: OptionKey): number {
   return props.stats.answered ? Math.round((props.stats.optionStats[key] / props.stats.answered) * 100) : 0;
 }
+
+function displayStudentName(name: string): string {
+  return name.split('#')[0] || name;
+}
 </script>
 
 <template>
@@ -50,14 +54,14 @@ function optionPercent(key: OptionKey): number {
       <article>
         <h2>已答 {{ answeredParticipants.length }} 人</h2>
         <div class="student-list">
-          <div v-for="item in answeredParticipants" :key="item.studentId"><b>{{ item.displayName }}</b><span>{{ item.cardCode }} / {{ item.selectedOption }}</span></div>
+          <div v-for="item in answeredParticipants" :key="item.studentId"><b>{{ displayStudentName(item.displayName) }}</b><span>{{ item.cardCode }} / {{ item.selectedOption }}</span></div>
           <div v-if="!answeredParticipants.length"><b>等待采集</b><span>暂无</span></div>
         </div>
       </article>
       <article class="missing-roster">
         <h2>未采集 {{ unansweredParticipants.length }} 人</h2>
         <div class="student-list pending">
-          <div v-for="item in unansweredParticipants" :key="item.studentId"><b>{{ item.displayName }}</b><span>{{ item.cardCode }}</span></div>
+          <div v-for="item in unansweredParticipants" :key="item.studentId"><b>{{ displayStudentName(item.displayName) }}</b><span>{{ item.cardCode }}</span></div>
           <div v-if="!unansweredParticipants.length"><b>已全部采集</b><span>完成</span></div>
         </div>
       </article>
