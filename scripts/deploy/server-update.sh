@@ -4,6 +4,8 @@ set -euo pipefail
 APP_DIR="${APP_DIR:-/www/wwwroot/zhidaroom}"
 NODE_BIN_DIR="${NODE_BIN_DIR:-/www/server/nodejs/v22.22.3/bin}"
 API_PM2_NAME="${API_PM2_NAME:-api_server}"
+BT_NODE_SCRIPT="${BT_NODE_SCRIPT:-/www/server/nodejs/vhost/scripts/api_server.sh}"
+BT_NODE_PID_FILE="${BT_NODE_PID_FILE:-/www/server/nodejs/vhost/pids/api_server.pid}"
 
 if [ ! -d "${APP_DIR}/.git" ]; then
   echo "未找到 Git 仓库目录: ${APP_DIR}" >&2
@@ -47,7 +49,12 @@ ensure_executable_permissions
 ./scripts/mobile/scanner-build.sh
 
 echo "==> 重启 API"
-if command -v pm2 >/dev/null 2>&1; then
+if [ -f "${BT_NODE_SCRIPT}" ]; then
+  if [ -f "${BT_NODE_PID_FILE}" ]; then
+    kill "$(cat "${BT_NODE_PID_FILE}")" 2>/dev/null || true
+  fi
+  bash "${BT_NODE_SCRIPT}"
+elif command -v pm2 >/dev/null 2>&1; then
   if pm2 describe "${API_PM2_NAME}" >/dev/null 2>&1; then
     pm2 restart "${API_PM2_NAME}"
   else
