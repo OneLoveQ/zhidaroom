@@ -36,7 +36,6 @@ function drawPage(ctx: CanvasRenderingContext2D, classView: ClassView, student: 
   drawAnswerLabels(ctx, 620, 640, 780);
   text(ctx, student.displayName, 620, 1215, 72, '#111827', 'bold', 'center');
   text(ctx, student.cardCode, 620, 1315, 88, '#111827', 'bold', 'center');
-  text(ctx, student.studentNo, 620, 1400, 38, '#4b5563', 'normal', 'center');
 }
 
 function drawMarker(ctx: CanvasRenderingContext2D, id: number, x: number, y: number, size: number): void {
