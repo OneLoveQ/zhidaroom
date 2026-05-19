@@ -1,0 +1,280 @@
+:root {
+  background: #f4f6f8;
+  color: #18212b;
+  font-family:
+    Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+input {
+  background: #ffffff;
+  border: 1px solid #d8e1e8;
+  border-radius: 8px;
+  color: #18212b;
+  font: inherit;
+  min-height: 40px;
+  padding: 0 12px;
+}
+
+label {
+  color: #4d5b68;
+  display: grid;
+  font-weight: 750;
+  gap: 6px;
+}
+
+button {
+  align-items: center;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-weight: 650;
+  gap: 8px;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 14px;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.42;
+}
+
+button:focus-visible {
+  outline: 2px solid #6a9cc5;
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  font-size: 22px;
+  letter-spacing: 0;
+  line-height: 1.25;
+  margin-bottom: 0;
+}
+
+h2 {
+  font-size: 24px;
+  letter-spacing: 0;
+  line-height: 1.25;
+  margin-bottom: 0;
+}
+
+h3 {
+  font-size: 17px;
+  letter-spacing: 0;
+}
+
+.status {
+  background: #edf7f2;
+  border: 1px solid #cce5d9;
+  border-radius: 8px;
+  color: #246347;
+  max-width: 520px;
+  padding: 10px 12px;
+}
+
+.status.error {
+  background: #fff3ee;
+  border-color: #efc7b8;
+  color: #91412c;
+}
+
+.workflow {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.step-strip,
+.progress-line,
+.wide {
+  grid-column: 1 / -1;
+}
+
+.step-strip {
+  background: #ffffff;
+  border: 1px solid #dde4ea;
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 10px;
+}
+
+.step-strip button {
+  background: #18212b;
+  color: #ffffff;
+  min-width: 0;
+}
+
+.step-strip button:not(:disabled):hover {
+  background: #253241;
+}
+
+.progress-line {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.step {
+  align-items: center;
+  color: #7b8794;
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+  min-width: 0;
+}
+
+.step.done {
+  color: #24724f;
+}
+
+.panel {
+  background: #ffffff;
+  border: 1px solid #dde4ea;
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.question {
+  font-size: 19px;
+  font-weight: 750;
+}
+
+.options,
+.bars,
+.diagnosis,
+.links,
+.report {
+  display: grid;
+  gap: 10px;
+}
+
+.options span,
+.diagnosis p,
+.links div {
+  background: #f7f9fb;
+  border: 1px solid #e6ebf0;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.stats strong,
+.report strong {
+  display: block;
+  font-size: 42px;
+  line-height: 1;
+}
+
+.bars div {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 24px minmax(120px, 1fr) 28px;
+}
+
+meter {
+  height: 14px;
+  width: 100%;
+}
+
+.name-switch {
+  align-items: center;
+  color: #246347;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 8px;
+}
+
+.name-switch input {
+  height: 18px;
+  width: 18px;
+}
+
+.links div {
+  align-items: center;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+}
+
+.links span {
+  color: #4e5965;
+  font-weight: 750;
+}
+
+.links a {
+  color: #1d5f82;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
+.links code {
+  color: #1f2a35;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+
+.links button {
+  background: #edf2f6;
+  color: #26323e;
+  min-height: 34px;
+  padding: 0 12px;
+}
+
+.diagnosis p {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 48px minmax(0, 1fr);
+  margin: 0;
+}
+
+.diagnosis b {
+  color: #24724f;
+}
+
+.empty,
+small {
+  color: #727e89;
+}
+
+@media (max-width: 960px) {
+  .shell,
+  .workflow,
+  .topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .shell,
+  .topbar {
+    display: grid;
+  }
+
+  .sidebar {
+    min-height: auto;
+  }
+
+  .step-strip,
+  .progress-line {
+    grid-template-columns: 1fr;
+  }
+}

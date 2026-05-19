@@ -1,0 +1,54 @@
+.creator-tabs,
+.creator-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.creator-tabs button {
+  background: #edf2f6;
+  color: #26323e;
+  flex: 1;
+  min-width: 92px;
+}
+
+.creator-tabs button.active {
+  background: #111a24;
+  color: #fff;
+}
+
+.candidate-card {
+  background: #f7fafc;
+  border: 1px solid #dce4eb;
+  border-radius: 14px;
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+}
+
+.candidate-card h3,
+.candidate-card p {
+  margin: 0;
+}
+
+.candidate-card p {
+  color: #65717d;
+  font-weight: 750;
+}
+
+.candidate-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.candidate-list {
+  display: grid;
+  gap: 10px;
+}
+
+@media (max-width: 520px) {
+  .candidate-grid {
+    grid-template-columns: 1fr;
+  }
+}

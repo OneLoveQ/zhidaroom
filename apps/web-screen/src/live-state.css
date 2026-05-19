@@ -1,0 +1,67 @@
+.bind-card {
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d7e0dc;
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  padding: 10px;
+}
+.bind-card img {
+  height: 122px;
+  width: 122px;
+}
+.bind-card div {
+  align-items: center;
+  color: #235c51;
+  display: flex;
+  font-weight: 800;
+  gap: 6px;
+}
+.empty-bind,
+.complete-panel,
+.report-panel {
+  align-content: center;
+  background: #ffffff;
+  border: 1px solid #d7e0dc;
+  border-radius: 8px;
+  display: grid;
+  justify-items: center;
+  min-height: 62vh;
+  padding: 36px;
+  text-align: center;
+}
+.empty-bind h2,
+.complete-panel h2,
+.report-panel h2 {
+  font-size: 54px;
+  margin: 18px 0 10px;
+}
+.empty-bind p,
+.complete-panel p {
+  color: #50615d;
+  font-size: 28px;
+}
+
+.bind-warning {
+  color: #9a3a22;
+  font-size: 22px;
+  font-weight: 800;
+}
+.complete-panel {
+  background: #f7fbf9;
+  border-color: #91c8b7;
+}
+.complete-panel h2 {
+  color: #235c51;
+}
+.report-panel {
+  align-content: start;
+  gap: 24px;
+  text-align: left;
+}
+.report-panel h2 {
+  justify-self: start;
+  margin: 0;
+}

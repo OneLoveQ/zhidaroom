@@ -1,0 +1,168 @@
+:root {
+  color: #162027;
+  font-family:
+    Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  background: #f2f4f1;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.shell {
+  display: grid;
+  gap: 22px;
+  min-height: 100vh;
+  padding: 30px;
+}
+
+.eyebrow {
+  color: #2d7668;
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  font-size: 38px;
+  line-height: 1.1;
+  margin-bottom: 10px;
+}
+
+h2 {
+  font-size: 22px;
+}
+
+.intro,
+.empty {
+  color: #60716b;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+button {
+  align-items: center;
+  background: #2d7668;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-weight: 700;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.status {
+  background: #e4ece8;
+  border: 1px solid #c9d8d2;
+  border-radius: 8px;
+  color: #255f55;
+  margin: 0;
+  padding: 12px 14px;
+}
+
+.status.error {
+  background: #fff1ec;
+  border-color: #efc0af;
+  color: #913820;
+}
+
+.grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+article {
+  background: #ffffff;
+  border: 1px solid #d8e0dc;
+  border-radius: 8px;
+  padding: 22px;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+dl {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+dl div {
+  align-items: center;
+  border-bottom: 1px solid #edf1ef;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 96px minmax(0, 1fr);
+  padding-bottom: 10px;
+}
+
+dt {
+  color: #60716b;
+}
+
+dd {
+  font-weight: 800;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.bars {
+  display: grid;
+  gap: 12px;
+}
+
+.bars div {
+  align-items: center;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 28px minmax(0, 1fr) 44px;
+}
+
+meter {
+  height: 18px;
+  width: 100%;
+}
+
+.link {
+  background: #f4f7f5;
+  border-radius: 8px;
+  color: #255f55;
+  margin: 18px 0 0;
+  overflow-wrap: anywhere;
+  padding: 12px;
+}
+
+@media (max-width: 820px) {
+  .shell {
+    padding: 18px;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,298 @@
+:root {
+  background: #eef2f5;
+  color: #17212b;
+  font-family:
+    Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.scanner-shell {
+  display: grid;
+  gap: 14px;
+  margin: 0 auto;
+  max-width: 560px;
+  min-height: 100vh;
+  padding: 14px;
+}
+
+.hero,
+.panel,
+.camera-card {
+  border-radius: 16px;
+}
+
+.hero {
+  background: #111a24;
+  color: #f8fafc;
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+}
+
+.hero p,
+.hero h1 {
+  margin: 0;
+}
+
+.hero p {
+  color: #72c4a3;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.hero h1 {
+  font-size: 26px;
+  letter-spacing: 0;
+}
+
+.hero span {
+  color: #d5dde6;
+  line-height: 1.5;
+}
+
+.error {
+  color: #f3aa97 !important;
+}
+
+.panel {
+  background: #ffffff;
+  border: 1px solid #dce4eb;
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.controls {
+  grid-template-columns: 1fr;
+}
+
+label {
+  color: #4e5a66;
+  display: grid;
+  font-size: 13px;
+  font-weight: 750;
+  gap: 7px;
+}
+
+input {
+  background: #fbfcfd;
+  border: 1px solid #d6e0e8;
+  border-radius: 12px;
+  color: #17212b;
+  min-height: 44px;
+  outline: none;
+  padding: 0 12px;
+}
+
+select,
+textarea {
+  background: #fbfcfd;
+  border: 1px solid #d6e0e8;
+  border-radius: 12px;
+  color: #17212b;
+  min-height: 44px;
+  outline: none;
+  padding: 10px 12px;
+}
+
+textarea {
+  resize: vertical;
+  width: 100%;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #6c9cc3;
+  box-shadow: 0 0 0 3px rgba(108, 156, 195, 0.16);
+}
+
+button {
+  align-items: center;
+  background: #17212b;
+  border: 0;
+  border-radius: 12px;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  font-weight: 800;
+  gap: 8px;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 14px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.secondary {
+  background: #edf2f6;
+  color: #26323e;
+}
+
+.camera-card {
+  aspect-ratio: 4 / 3;
+  background: #0e151d;
+  border: 1px solid #1c2a38;
+  overflow: hidden;
+  position: relative;
+}
+
+video {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+canvas {
+  display: none;
+}
+
+.scan-frame {
+  border: 2px solid rgba(114, 196, 163, 0.9);
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  height: calc(100% - 20px);
+  left: 10px;
+  pointer-events: none;
+  position: absolute;
+  top: 10px;
+  width: calc(100% - 20px);
+}
+
+.actions {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.progress-cards,
+.result-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+.progress-cards {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.progress-cards div {
+  background: #ffffff;
+  border: 1px solid #dce4eb;
+  border-radius: 14px;
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+}
+
+.progress-cards span {
+  color: #65717d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.progress-cards strong {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.progress-cards .missing {
+  background: #fff4ed;
+  border-color: #efc7b8;
+  color: #9a3f2b;
+}
+
+.result-grid div {
+  display: grid;
+  gap: 6px;
+}
+
+.result-grid span {
+  color: #65717d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.result-grid strong {
+  font-size: 15px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.roster-panel {
+  grid-template-columns: 1fr 1fr;
+}
+
+.roster-panel h2,
+.log-panel h2,
+.log-panel p {
+  margin: 0;
+}
+
+.roster-panel h2,
+.log-panel h2 {
+  font-size: 16px;
+}
+
+.student-list,
+.log-panel {
+  display: grid;
+  gap: 8px;
+}
+
+.complete-mobile {
+  min-height: 240px;
+  place-items: center;
+  text-align: center;
+}
+.complete-mobile h2 {
+  color: #235c51; font-size: 30px; margin: 0;
+}
+.complete-mobile p {
+  color: #4e5a66; font-weight: 800; margin: 0;
+}
+.student-list {
+  max-height: 180px;
+  overflow: auto;
+}
+
+.student-list span,
+.log-panel p {
+  background: #f7fafc;
+  border: 1px solid #e4ebf1;
+  border-radius: 10px;
+  color: #26323e;
+  font-weight: 700;
+  padding: 9px 10px;
+}
+
+.missing-list span {
+  background: #fff8f3;
+  border-color: #f1d5c8;
+  color: #9a3f2b;
+}
+
+@media (max-width: 520px) {
+  .actions,
+  .result-grid,
+  .roster-panel {
+    grid-template-columns: 1fr;
+  }
+}

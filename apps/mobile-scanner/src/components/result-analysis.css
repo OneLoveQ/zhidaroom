@@ -1,0 +1,161 @@
+.analysis-hero,
+.analysis-metrics,
+.analysis-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.analysis-hero {
+  align-items: start;
+  background: #111a24;
+  border-radius: 16px;
+  color: #f8fafc;
+  grid-template-columns: 1fr auto;
+  padding: 18px;
+}
+
+.analysis-hero p,
+.analysis-hero h2,
+.group-list h2,
+.teaching-action h2,
+.teaching-action p {
+  margin: 0;
+}
+
+.analysis-hero p {
+  color: #72c4a3;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.analysis-hero h2 {
+  font-size: 20px;
+  line-height: 1.35;
+}
+
+.icon-button {
+  min-height: 40px;
+  min-width: 40px;
+  padding: 0;
+}
+
+.analysis-metrics {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.analysis-metrics div {
+  background: #ffffff;
+  border: 1px solid #dce4eb;
+  border-radius: 14px;
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+}
+
+.analysis-metrics span,
+.analysis-title span {
+  color: #65717d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.analysis-metrics strong {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.analysis-title {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.analysis-title h2 {
+  font-size: 17px;
+  margin: 0;
+}
+
+.option-bars {
+  display: grid;
+  gap: 10px;
+}
+
+.option-row {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 24px 1fr 42px;
+}
+
+.bar-track {
+  background: #e9eff4;
+  border-radius: 999px;
+  height: 12px;
+  overflow: hidden;
+}
+
+.bar-track i {
+  background: #d47d5a;
+  display: block;
+  height: 100%;
+}
+
+.option-row.correct .bar-track i {
+  background: #4c9a78;
+}
+
+.analysis-note {
+  background: #f7fafc;
+  border-radius: 12px;
+  color: #4e5a66;
+  font-weight: 750;
+  line-height: 1.55;
+  margin: 0;
+  padding: 10px 12px;
+}
+
+.group-list h2,
+.teaching-action h2 {
+  font-size: 16px;
+}
+
+.group-list .student-list span {
+  display: grid;
+  gap: 4px;
+}
+
+.group-list em {
+  color: #65717d;
+  font-size: 12px;
+  font-style: normal;
+}
+
+.wrong .student-list span {
+  background: #fff3ee;
+  border-color: #efc7b8;
+}
+
+.missing .student-list span {
+  background: #fff8f3;
+  border-color: #f1d5c8;
+}
+
+.teaching-action p {
+  color: #26323e;
+  font-weight: 750;
+  line-height: 1.6;
+}
+
+.analysis-actions {
+  grid-template-columns: 1fr 1fr;
+}
+
+.analysis-actions .full {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 520px) {
+  .analysis-metrics {
+    grid-template-columns: 1fr 1fr;
+  }
+}

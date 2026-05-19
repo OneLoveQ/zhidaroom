@@ -1,0 +1,150 @@
+:root {
+  color: #182026;
+  font-family:
+    Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  background: #f3f5f2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+.shell {
+  display: grid;
+  gap: 22px;
+  min-height: 100vh;
+  padding: 30px;
+}
+
+.eyebrow {
+  color: #2d7668;
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+
+h1,
+h2,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  font-size: 38px;
+  margin-bottom: 10px;
+}
+
+.controls {
+  align-items: end;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+label {
+  color: #5c6964;
+  display: grid;
+  font-weight: 700;
+  gap: 6px;
+}
+
+input,
+select {
+  border: 1px solid #cbd7d2;
+  border-radius: 8px;
+  font: inherit;
+  height: 42px;
+  padding: 0 12px;
+}
+
+button {
+  align-items: center;
+  background: #2d7668;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-weight: 800;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.secondary {
+  background: #41524e;
+}
+
+.wide-field input {
+  min-width: 280px;
+}
+
+.summary,
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.summary div,
+article {
+  background: #ffffff;
+  border: 1px solid #d8e0dc;
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.summary span {
+  color: #60716b;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.summary strong {
+  font-size: 24px;
+}
+
+.grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+pre {
+  background: #111c24;
+  border-radius: 8px;
+  color: #dff6ec;
+  margin: 0;
+  min-height: 180px;
+  overflow: auto;
+  padding: 14px;
+}
+
+.error {
+  background: #fff1ec;
+  border: 1px solid #efc0af;
+  border-radius: 8px;
+  color: #913820;
+  margin: 0;
+  overflow-wrap: anywhere;
+  padding: 12px 14px;
+}
+
+@media (max-width: 860px) {
+  .summary,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

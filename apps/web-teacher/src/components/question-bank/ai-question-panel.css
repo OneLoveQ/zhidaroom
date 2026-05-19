@@ -1,0 +1,65 @@
+.ai-tabs,
+.candidate-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ai-tabs button {
+  background: #edf2f6;
+  color: #26323e;
+}
+
+.ai-tabs button.active {
+  background: #18212b;
+  color: #fff;
+}
+
+.candidate-list {
+  display: grid;
+  gap: 14px;
+}
+
+.candidate-card {
+  background: #f8fafb;
+  border: 1px solid #dfe7ee;
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.candidate-card h5 {
+  font-size: 15px;
+  margin: 0;
+}
+
+.candidate-card small {
+  color: #687684;
+  font-weight: 700;
+}
+
+.candidate-card textarea,
+.candidate-card input,
+.candidate-card select {
+  width: 100%;
+}
+
+.candidate-meta {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr 150px 110px;
+}
+
+.candidate-options {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 960px) {
+  .candidate-meta,
+  .candidate-options {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "zhida-smart-classroom-ai",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "check:structure": "bash scripts/check/structure.sh"
+  }
+}

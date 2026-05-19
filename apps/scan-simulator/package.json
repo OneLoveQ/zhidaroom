@@ -1,0 +1,21 @@
+{
+  "name": "@zhida/scan-simulator",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "../web-teacher/node_modules/.bin/vite --host 0.0.0.0 --port 5175",
+    "build": "../web-teacher/node_modules/.bin/vue-tsc --noEmit && ../web-teacher/node_modules/.bin/vite build",
+    "preview": "../web-teacher/node_modules/.bin/vite preview --host 0.0.0.0 --port 4175"
+  },
+  "dependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "lucide-vue-next": "^0.468.0",
+    "vite": "^7.1.3",
+    "vue": "^3.5.13",
+    "vue-tsc": "^2.1.10"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.2"
+  }
+}

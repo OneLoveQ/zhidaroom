@@ -1,0 +1,213 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  schoolId     String   @map("school_id")
+  name         String
+  phone        String   @unique
+  role         UserRole
+  passwordHash String   @map("password_hash")
+  status       String   @default("active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  school        School             @relation(fields: [schoolId], references: [id])
+  classes       Class[]            @relation("HeadTeacherClasses")
+  questions     Question[]
+  sessions      ClassroomSession[]
+  aiGenerations AiGeneration[]
+
+  @@map("users")
+}
+
+model School {
+  id             String   @id @default(uuid())
+  name           String
+  regionCode     String?  @map("region_code")
+  deploymentType String   @default("saas") @map("deployment_type")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  users   User[]
+  classes Class[]
+
+  @@map("schools")
+}
+
+model Class {
+  id            String   @id @default(uuid())
+  schoolId      String   @map("school_id")
+  grade         String
+  name          String
+  headTeacherId String?  @map("head_teacher_id")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  school      School             @relation(fields: [schoolId], references: [id])
+  headTeacher User?              @relation("HeadTeacherClasses", fields: [headTeacherId], references: [id])
+  students    Student[]
+  cards       Card[]
+  sessions    ClassroomSession[]
+
+  @@map("classes")
+}
+
+model Student {
+  id            String   @id @default(uuid())
+  classId       String   @map("class_id")
+  studentNo     String   @map("student_no")
+  nameRaw       String   @map("name_raw")
+  nameEncrypted String   @map("name_encrypted")
+  status        String   @default("active")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  class   Class    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  cards   Card[]
+  answers Answer[]
+
+  @@unique([classId, studentNo])
+  @@map("students")
+}
+
+model Card {
+  id          String @id @default(uuid())
+  cardCode    String @unique @map("card_code")
+  cardVersion String @default("v1") @map("card_version")
+  studentId   String @unique @map("student_id")
+  classId     String @map("class_id")
+  status      String @default("normal")
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  class   Class   @relation(fields: [classId], references: [id], onDelete: Cascade)
+
+  @@map("cards")
+}
+
+model Question {
+  id              String         @id @default(uuid())
+  creatorId       String         @map("creator_id")
+  subject         String
+  grade           String
+  stem            String
+  options         Json
+  answer          String
+  explanation     String
+  knowledgePoints Json           @map("knowledge_points")
+  difficulty      String
+  source          QuestionSource @default(manual)
+  aiGenerated     Boolean        @default(false) @map("ai_generated")
+  reviewStatus    ReviewStatus   @default(draft) @map("review_status")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  creator          User              @relation(fields: [creatorId], references: [id])
+  sessionQuestions SessionQuestion[]
+  answers          Answer[]
+
+  @@map("questions")
+}
+
+model ClassroomSession {
+  id            String        @id @default(uuid())
+  teacherId     String        @map("teacher_id")
+  classId       String        @map("class_id")
+  title         String
+  mode          SessionMode
+  status        SessionStatus @default(draft)
+  teacherName   String?       @map("teacher_name")
+  subject       String?
+  classroomCode String?       @map("classroom_code")
+  startedAt     DateTime?     @map("started_at")
+  endedAt       DateTime?     @map("ended_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  teacher          User              @relation(fields: [teacherId], references: [id])
+  class            Class             @relation(fields: [classId], references: [id], onDelete: Cascade)
+  sessionQuestions SessionQuestion[]
+  answers          Answer[]
+
+  @@map("classroom_sessions")
+}
+
+model SessionQuestion {
+  id        String @id @default(uuid())
+  sessionId String @map("session_id")
+  questionId String @map("question_id")
+  orderNo    Int    @map("order_no")
+  timeLimit  Int?   @map("time_limit")
+
+  session  ClassroomSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question Question         @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, questionId])
+  @@map("session_questions")
+}
+
+model Answer {
+  id               String   @id @default(uuid())
+  sessionId        String   @map("session_id")
+  questionId       String   @map("question_id")
+  studentId        String   @map("student_id")
+  cardCode         String   @map("card_code")
+  selectedOption   String   @map("selected_option")
+  isCorrect        Boolean  @map("is_correct")
+  recognizedAt     DateTime @map("recognized_at")
+  recognitionScore Float    @map("recognition_score")
+  deviceId         String   @map("device_id")
+
+  session  ClassroomSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question Question         @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  student  Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, questionId, studentId])
+  @@map("answers")
+}
+
+model AiGeneration {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  type      String
+  prompt    String
+  output    Json
+  modelName String   @map("model_name")
+  reviewed  Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("ai_generations")
+}
+
+enum UserRole {
+  teacher
+  admin
+  researcher
+}
+
+enum QuestionSource {
+  manual
+  ai
+  import
+}
+
+enum ReviewStatus {
+  draft
+  pending
+  approved
+  rejected
+}
+
+enum SessionMode {
+  exit_ticket
+  quiz
+  vote
+}
+
+enum SessionStatus {
+  draft
+  active
+  ended
+}

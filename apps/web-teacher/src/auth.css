@@ -1,0 +1,48 @@
+.auth-shell {
+  align-items: center;
+  display: grid;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.auth-card {
+  background: #ffffff;
+  border: 1px solid #dde4ea;
+  border-radius: 8px;
+  display: grid;
+  gap: 14px;
+  margin: 0 auto;
+  max-width: 420px;
+  padding: 24px;
+  width: 100%;
+}
+
+.auth-card form {
+  display: grid;
+  gap: 12px;
+}
+
+.auth-card select {
+  background: #ffffff;
+}
+
+.auth-card form button {
+  background: #18212b;
+  color: #ffffff;
+}
+
+.auth-subtitle {
+  color: #607080;
+  margin: 0;
+}
+
+.auth-error {
+  color: #91412c;
+  font-weight: 800;
+  margin: 0;
+}
+
+.auth-switch {
+  background: #edf2f6;
+  color: #26323e;
+}
