@@ -44,7 +44,7 @@ const canCreate = computed(() => Boolean(form.classId && form.subject && form.te
 const canStartNewRun = computed(() => Boolean(newRunTitle.value.trim() && newRunQuestionIds.value.length));
 const scannerRuntime = useScanning({ session, activeRun, currentQuestion, refreshProgress, setMessage, setFailed });
 const { canScan, canvasRef, confirmed, decoded, scanLogs, scanning, uploading, videoRef } = scannerRuntime;
-onMounted(() => void initialize());
+onMounted(() => { if (!testCodesMode) void initialize(); });
 onBeforeUnmount(() => { scannerRuntime.stopScan(false); scannerRuntime.stopCamera(); stopProgressPolling(); });
 async function initialize(): Promise<void> {
   const pairCode = params.get('displayPairCode');
