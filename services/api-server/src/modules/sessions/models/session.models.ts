@@ -27,6 +27,7 @@ export interface SessionEntity {
   classroomCode?: string;
   startedAt?: Date;
   endedAt?: Date;
+  deletedAt?: Date;
   createdAt: Date;
 }
 
@@ -48,6 +49,7 @@ export interface SessionView {
   classroomCode?: string;
   startedAt?: string;
   endedAt?: string;
+  deletedAt?: string;
   createdAt: string;
 }
 
@@ -60,4 +62,5 @@ export interface SessionsRepository {
   listSessions(): Promise<SessionEntity[]>;
   findSessionById(sessionId: string): Promise<SessionEntity | undefined>;
   findSessionByClassroomCode(classroomCode: string): Promise<SessionEntity | undefined>;
+  hideSession(sessionId: string, deletedAt: Date): Promise<void>;
 }

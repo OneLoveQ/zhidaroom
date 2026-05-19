@@ -76,6 +76,31 @@ describe('SessionsService', () => {
     await expect(sessionsService.endSession(session.id)).rejects.toThrow(BadRequestException);
   });
 
+  it('隐藏历史课堂时只做删除标记，不再出现在列表中', async () => {
+    const { classesService, questionsService, sessionsService } = createServices();
+    const createdClass = await classesService.createClass({ grade: '七年级', name: '1班' });
+    const question = await questionsService.createQuestion({
+      subject: '数学',
+      grade: '七年级',
+      stem: '测试题',
+      options: { A: '选项A', B: '选项B', C: '选项C', D: '选项D' },
+      answer: 'A',
+      explanation: '解析',
+      knowledgePoints: ['测试知识点'],
+      difficulty: '基础'
+    });
+    const session = await sessionsService.createSession({
+      classId: createdClass.id,
+      title: '出口检测',
+      mode: 'exit_ticket',
+      questionIds: [question.id]
+    });
+
+    await expect(sessionsService.hideSession(session.id)).resolves.toEqual({ deleted: true });
+    expect(await sessionsService.listSessions()).toHaveLength(0);
+    expect((await sessionsService.findSession(session.id))?.deletedAt).toBeDefined();
+  });
+
   it('生成大屏二维码使用的教师扫码端地址携带课堂绑定令牌', () => {
     const { sessionsService } = createServices();
     const url = sessionsService.getMobileBindUrl({

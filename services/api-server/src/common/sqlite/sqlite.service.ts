@@ -73,6 +73,7 @@ export class SqliteService {
         classroom_code TEXT,
         started_at TEXT,
         ended_at TEXT,
+        deleted_at TEXT,
         created_at TEXT NOT NULL
       );
       CREATE TABLE IF NOT EXISTS session_questions (
@@ -214,6 +215,7 @@ export class SqliteService {
       'ALTER TABLE sessions ADD COLUMN stage TEXT',
       'ALTER TABLE sessions ADD COLUMN current_question_id TEXT',
       'ALTER TABLE sessions ADD COLUMN auto_advance_at TEXT',
+      'ALTER TABLE sessions ADD COLUMN deleted_at TEXT',
       'ALTER TABLE display_pairings ADD COLUMN workspace_id TEXT',
       'ALTER TABLE display_pairings ADD COLUMN teacher_user_id TEXT'
     ].forEach((statement) => {

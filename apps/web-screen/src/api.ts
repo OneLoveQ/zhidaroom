@@ -97,6 +97,10 @@ export const api = {
     return request(`/api/sessions/${sessionId}/binding`);
   },
 
+  hideSession(sessionId: string): Promise<{ deleted: true }> {
+    return request(`/api/sessions/${sessionId}`, { method: 'DELETE' });
+  },
+
   createDisplayPairing(displayId: string): Promise<DisplayPairingView> {
     return request('/api/displays/pairings', {
       method: 'POST',

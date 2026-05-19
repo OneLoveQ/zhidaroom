@@ -70,6 +70,12 @@ export class SessionsService {
     return (await this.repository.listSessions()).map((item) => this.toSessionView(item));
   }
 
+  async hideSession(sessionId: string): Promise<{ deleted: true }> {
+    await this.getSessionEntity(sessionId);
+    await this.repository.hideSession(sessionId, new Date());
+    return { deleted: true };
+  }
+
   async getSession(sessionId: string): Promise<SessionDetailView> {
     const entity = await this.getSessionEntity(sessionId);
     return this.toSessionDetailView(entity, await this.resolveQuestions(entity.questionIds));
@@ -243,6 +249,7 @@ export class SessionsService {
       classroomCode: entity.classroomCode,
       startedAt: entity.startedAt?.toISOString(),
       endedAt: entity.endedAt?.toISOString(),
+      deletedAt: entity.deletedAt?.toISOString(),
       createdAt: entity.createdAt.toISOString()
     };
   }

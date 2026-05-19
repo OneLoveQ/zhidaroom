@@ -186,15 +186,72 @@
   padding: 0 14px;
 }
 
-.history-card footer button.secondary {
+.history-card footer button.secondary,
+.confirm-dialog footer button.secondary {
   background: #edf2f0;
   color: #1f4039;
+}
+
+.history-card footer button.danger,
+.confirm-dialog footer button.danger {
+  align-items: center;
+  background: #fff4ed;
+  border: 1px solid #efc7b8;
+  color: #9a3a22;
+  display: inline-flex;
+  gap: 6px;
 }
 
 .history-empty {
   align-content: center;
   color: #50615d;
   min-height: 150px;
+}
+
+.confirm-mask {
+  align-items: center;
+  background: rgba(17, 28, 36, 0.48);
+  display: grid;
+  inset: 0;
+  justify-items: center;
+  position: fixed;
+  z-index: 35;
+}
+
+.confirm-dialog {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 24px 70px rgba(17, 28, 36, 0.24);
+  display: grid;
+  gap: 12px;
+  max-width: 460px;
+  padding: 24px;
+  position: relative;
+  width: min(92vw, 460px);
+}
+
+.confirm-dialog h3,
+.confirm-dialog p {
+  margin: 0;
+}
+
+.confirm-dialog h3 {
+  font-size: 24px;
+}
+
+.confirm-dialog footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.confirm-dialog footer button {
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 850;
+  min-height: 42px;
+  padding: 0 16px;
 }
 
 @media (max-width: 980px) {

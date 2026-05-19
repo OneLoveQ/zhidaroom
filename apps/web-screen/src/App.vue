@@ -45,9 +45,7 @@ const isHistoryReview = computed(() => Boolean(historySessionId.value && state.s
 const answeredRate = computed(() => state.stats.total ? Math.round((state.stats.answered / state.stats.total) * 100) : 0);
 const answeredParticipants = computed(() => state.participants.filter((item) => item.answered));
 const unansweredParticipants = computed(() => state.participants.filter((item) => !item.answered));
-function optionPercent(key: OptionKey): number {
-  return state.stats.answered ? Math.round((state.stats.optionStats[key] / state.stats.answered) * 100) : 0;
-}
+function optionPercent(key: OptionKey): number { return state.stats.answered ? Math.round((state.stats.optionStats[key] / state.stats.answered) * 100) : 0; }
 async function resolveSessionId(): Promise<string | null> {
   const sessionId = params.get('sessionId');
   if (sessionId) return sessionId;
@@ -112,9 +110,7 @@ async function loadHistoryReports(): Promise<void> {
 function getDisplayId(): string {
   const existing = window.localStorage.getItem(displayIdKey);
   if (existing) return existing;
-  const created = crypto.randomUUID();
-  window.localStorage.setItem(displayIdKey, created);
-  return created;
+  const created = crypto.randomUUID(); window.localStorage.setItem(displayIdKey, created); return created;
 }
 
 async function exitClassroom(): Promise<void> {
@@ -142,16 +138,14 @@ async function openHistoryReport(sessionId: string): Promise<void> {
   await loadLiveData();
 }
 
-function openAdminPage(): void {
-  window.location.assign(createAdminUrl());
+async function logout(): Promise<void> {
+  await api.logout();
+  if (refreshTimer) window.clearInterval(refreshTimer);
+  window.localStorage.removeItem(boundSessionKey);
+  currentUser.value = null;
 }
 
-function createAdminUrl(): string {
-  if (window.location.port === '5174') {
-    return `${window.location.protocol}//${window.location.hostname}:5173/`;
-  }
-  return `${window.location.origin}/teacher/`;
-}
+function openAdminPage(): void { window.location.assign(window.location.port === '5174' ? `${window.location.protocol}//${window.location.hostname}:5173/` : `${window.location.origin}/teacher/`); }
 
 async function openCurrentQr(): Promise<void> {
   if (!state.mobileBindUrl) return;
@@ -161,6 +155,11 @@ async function openCurrentQr(): Promise<void> {
 async function openHistoryQr(sessionId: string): Promise<void> {
   const binding = await api.getBinding(sessionId);
   await openQrDialog(binding.mobileBindUrl);
+}
+
+async function hideHistorySession(sessionId: string): Promise<void> {
+  await api.hideSession(sessionId);
+  historyReports.value = historyReports.value.filter((item) => item.session.id !== sessionId);
 }
 
 async function openQrDialog(url: string): Promise<void> {
@@ -207,13 +206,9 @@ async function handleAuthenticated(user: AuthUserView): Promise<void> {
   await startScreen();
 }
 
-onMounted(async () => {
-  await checkAuth();
-});
+onMounted(async () => { await checkAuth(); });
 
-onUnmounted(() => {
-  if (refreshTimer) window.clearInterval(refreshTimer);
-});
+onUnmounted(() => { if (refreshTimer) window.clearInterval(refreshTimer); });
 </script>
 
 <template>
@@ -227,6 +222,9 @@ onUnmounted(() => {
       <div class="hero-actions">
         <button type="button" class="qr-toggle" @click="openAdminPage">
           <ExternalLink :size="20" />管理页面
+        </button>
+        <button type="button" class="qr-toggle" @click="logout">
+          <LogOut :size="20" />退出登录
         </button>
         <button v-if="state.mobileBindUrl" type="button" class="qr-toggle" @click="openCurrentQr">
           <QrCode :size="20" />课堂二维码
@@ -254,6 +252,7 @@ onUnmounted(() => {
       @refresh="loadHistoryReports"
       @open-report="openHistoryReport"
       @open-qr="openHistoryQr"
+      @hide-session="hideHistorySession"
     />
 
     <section v-else-if="state.stage === 'question_complete'" class="complete-panel">

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req } from '@nestjs/common';
 import { CreateSessionDto } from './dto/create-session.dto.js';
 import { UpdateSessionStageDto } from './dto/update-session-stage.dto.js';
 import { SessionDetailView, SessionView } from './models/session.models.js';
@@ -36,6 +36,11 @@ export class SessionsController {
   @Get(':sessionId')
   getSession(@Param('sessionId') sessionId: string): Promise<SessionDetailView> {
     return this.sessionsService.getSession(sessionId);
+  }
+
+  @Delete(':sessionId')
+  hideSession(@Param('sessionId') sessionId: string): Promise<{ deleted: true }> {
+    return this.sessionsService.hideSession(sessionId);
   }
 
   @Get(':sessionId/binding')

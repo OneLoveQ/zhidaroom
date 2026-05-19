@@ -92,6 +92,7 @@ export interface SessionDetailView {
   classroomCode?: string;
   startedAt?: string;
   endedAt?: string;
+  deletedAt?: string;
   createdAt: string;
   questions: ScreenQuestionView[];
 }
@@ -106,6 +107,7 @@ export interface SessionView {
   classroomCode?: string;
   startedAt?: string;
   endedAt?: string;
+  deletedAt?: string;
   createdAt: string;
 }
 

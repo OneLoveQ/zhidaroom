@@ -22,6 +22,7 @@ interface SessionRow {
   classroom_code: string | null;
   started_at: string | null;
   ended_at: string | null;
+  deleted_at: string | null;
   created_at: string;
 }
 
@@ -40,8 +41,8 @@ export class SqliteSessionsRepository implements SessionsRepository {
         INSERT INTO sessions
           (id, workspace_id, teacher_user_id, teacher_id, class_id, title, mode, status, stage,
            current_question_id, auto_advance_at, teacher_name, subject,
-           classroom_code, started_at, ended_at, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           classroom_code, started_at, ended_at, deleted_at, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON CONFLICT(id) DO UPDATE SET
           title = excluded.title,
           workspace_id = excluded.workspace_id,
@@ -54,7 +55,8 @@ export class SqliteSessionsRepository implements SessionsRepository {
           subject = excluded.subject,
           classroom_code = excluded.classroom_code,
           started_at = excluded.started_at,
-          ended_at = excluded.ended_at
+          ended_at = excluded.ended_at,
+          deleted_at = excluded.deleted_at
       `).run(...this.values(entity));
       this.sqlite.db.prepare('DELETE FROM session_questions WHERE session_id = ?').run(entity.id);
       const insertQuestion = this.sqlite.db.prepare(`
@@ -72,7 +74,7 @@ export class SqliteSessionsRepository implements SessionsRepository {
 
   async listSessions(): Promise<SessionEntity[]> {
     return this.sqlite.db
-      .prepare('SELECT * FROM sessions ORDER BY created_at DESC')
+      .prepare('SELECT * FROM sessions WHERE deleted_at IS NULL ORDER BY created_at DESC')
       .all()
       .map((row) => this.toEntity(row as unknown as SessionRow));
   }
@@ -86,9 +88,15 @@ export class SqliteSessionsRepository implements SessionsRepository {
     classroomCode: string
   ): Promise<SessionEntity | undefined> {
     const row = this.sqlite.db
-      .prepare('SELECT * FROM sessions WHERE classroom_code = ? ORDER BY created_at DESC LIMIT 1')
+      .prepare('SELECT * FROM sessions WHERE classroom_code = ? AND deleted_at IS NULL ORDER BY created_at DESC LIMIT 1')
       .get(classroomCode);
     return row ? this.toEntity(row as unknown as SessionRow) : undefined;
+  }
+
+  async hideSession(sessionId: string, deletedAt: Date): Promise<void> {
+    this.sqlite.db
+      .prepare('UPDATE sessions SET deleted_at = ? WHERE id = ?')
+      .run(deletedAt.toISOString(), sessionId);
   }
 
   private values(entity: SessionEntity): Array<string | null> {
@@ -109,6 +117,7 @@ export class SqliteSessionsRepository implements SessionsRepository {
       entity.classroomCode ?? null,
       entity.startedAt?.toISOString() ?? null,
       entity.endedAt?.toISOString() ?? null,
+      entity.deletedAt?.toISOString() ?? null,
       entity.createdAt.toISOString()
     ];
   }
@@ -132,6 +141,7 @@ export class SqliteSessionsRepository implements SessionsRepository {
       classroomCode: row.classroom_code ?? undefined,
       startedAt: row.started_at ? new Date(row.started_at) : undefined,
       endedAt: row.ended_at ? new Date(row.ended_at) : undefined,
+      deletedAt: row.deleted_at ? new Date(row.deleted_at) : undefined,
       createdAt: new Date(row.created_at)
     };
   }
