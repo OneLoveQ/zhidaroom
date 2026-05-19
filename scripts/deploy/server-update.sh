@@ -17,6 +17,12 @@ fi
 cd "${APP_DIR}"
 mkdir -p logs data
 
+ensure_executable_permissions() {
+  find scripts -name '*.sh' -type f -exec chmod +x {} \;
+  find apps services -path '*/node_modules/.bin/*' -exec chmod +x {} \; 2>/dev/null || true
+  find apps services -path '*/node_modules/*/bin/*' -type f -exec chmod +x {} \; 2>/dev/null || true
+}
+
 echo "==> 备份 SQLite 数据库"
 if [ -f data/zhida.dev.db ]; then
   mkdir -p data/backups
@@ -27,12 +33,14 @@ echo "==> 拉取最新代码"
 git pull --ff-only
 
 echo "==> 安装依赖"
+ensure_executable_permissions
 ./scripts/api/install.sh
 ./scripts/web/teacher-install.sh
 ./scripts/web/screen-install.sh
 ./scripts/mobile/scanner-install.sh
 
 echo "==> 构建服务与前端"
+ensure_executable_permissions
 ./scripts/api/build.sh
 ./scripts/web/teacher-build.sh
 ./scripts/web/screen-build.sh

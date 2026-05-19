@@ -111,8 +111,7 @@ async function bindDisplayIfNeeded(sessionId: string): Promise<void> {
   api.setMobileBinding(sessionId, binding.bindToken);
   window.localStorage.setItem(mobileSessionKey, sessionId);
   window.localStorage.setItem(mobileBindTokenKey, binding.bindToken);
-  window.localStorage.removeItem(displayPairCodeKey);
-  api.clearDisplayPairing();
+  clearDisplayPairingState();
 }
 async function handleQuestionSaved(question: QuestionView, target: 'classroom' | 'run'): Promise<void> {
   questions.value = await api.listQuestions();
@@ -266,7 +265,7 @@ async function runAction(action: () => Promise<void>, done?: () => void): Promis
     done?.();
   }
 }
-function clearDisplayPairingState(): void { window.localStorage.removeItem(displayPairCodeKey); api.clearDisplayPairing(); }
+function clearDisplayPairingState(): void { window.localStorage.removeItem(displayPairCodeKey); api.clearDisplayPairing(); if (params.has('displayPairCode')) { params.delete('displayPairCode'); window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}${window.location.hash}`); } }
 function setMessage(text: string): void { message.value = text; }
 function setFailed(text: string): void { failed.value = text; }
 </script>
