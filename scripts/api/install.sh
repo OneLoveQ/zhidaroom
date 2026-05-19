@@ -3,5 +3,4 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
-npm install --prefix "${ROOT_DIR}/services/api-server"
-
+"${ROOT_DIR}/scripts/deploy/npm-install.sh" "${ROOT_DIR}/services/api-server"

@@ -6,7 +6,7 @@ ACTION="${1:-build}"
 
 case "${ACTION}" in
   install)
-    npm install --prefix "${ROOT_DIR}/apps/admin-console" --workspaces=false
+    "${ROOT_DIR}/scripts/deploy/npm-install.sh" "${ROOT_DIR}/apps/admin-console"
     ;;
   build)
     npm run build --prefix "${ROOT_DIR}/apps/admin-console" --workspaces=false
