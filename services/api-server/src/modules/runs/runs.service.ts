@@ -60,6 +60,7 @@ export class RunsService {
   }
 
   async startRun(sessionId: string, runId: string): Promise<AssessmentRunView> {
+    await this.sessionsService.startSession(sessionId);
     const entity = await this.getRunEntity(sessionId, runId);
     const active = await this.repository.findActiveBySession(sessionId);
     if (active && active.id !== runId) {

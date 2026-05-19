@@ -24,7 +24,11 @@ export function useScanning(options: ScanningOptions) {
   const timer = ref<number>();
   const videoRef = ref<HTMLVideoElement | null>(null);
   const canvasRef = ref<HTMLCanvasElement | null>(null);
-  const canScan = computed(() => Boolean(options.session.value?.status === 'active' && options.currentQuestion.value));
+  const canScan = computed(() => Boolean(
+    options.currentQuestion.value &&
+    (options.activeRun.value?.status === 'active' || options.session.value?.status === 'active') &&
+    options.activeRun.value?.stage !== 'question_complete'
+  ));
 
   onBeforeUnmount(() => {
     stopScan(false);
@@ -34,7 +38,7 @@ export function useScanning(options: ScanningOptions) {
   async function startScan(): Promise<void> {
     const session = options.session.value;
     const question = options.currentQuestion.value;
-    if (!session || !question) {
+    if (!session || !question || options.activeRun.value?.status === 'completed') {
       options.setFailed('请先生成课堂并选择题目');
       return;
     }
