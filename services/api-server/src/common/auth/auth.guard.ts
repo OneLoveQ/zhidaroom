@@ -78,7 +78,7 @@ export class AuthGuard implements CanActivate {
     const row = this.sqlite.db
       .prepare('SELECT pair_code, workspace_id, teacher_user_id, status, expires_at FROM display_pairings WHERE pair_code = ?')
       .get(pairCode) as unknown as PairingAuthRow | undefined;
-    if (!row || row.status !== 'waiting' || new Date(row.expires_at).getTime() <= Date.now()) {
+    if (!row || row.status === 'expired' || isExpiredWaitingPairing(row)) {
       throw new UnauthorizedException('大屏配对码已失效');
     }
     request.auth = {
@@ -89,6 +89,10 @@ export class AuthGuard implements CanActivate {
     };
     return true;
   }
+}
+
+function isExpiredWaitingPairing(row: PairingAuthRow): boolean {
+  return row.status === 'waiting' && new Date(row.expires_at).getTime() <= Date.now();
 }
 
 function readHeader(request: AuthenticatedRequest, name: string): string | undefined {

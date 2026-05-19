@@ -50,6 +50,10 @@ export const api = {
     displayPairCode = pairCode;
   },
 
+  clearDisplayPairing(): void {
+    displayPairCode = null;
+  },
+
   listClasses(): Promise<ClassView[]> {
     return request('/api/classes');
   },

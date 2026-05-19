@@ -143,7 +143,7 @@ async function openHistoryReport(sessionId: string): Promise<void> {
 }
 
 function openAdminPage(): void {
-  window.open(createAdminUrl(), '_blank', 'noopener,noreferrer');
+  window.location.assign(createAdminUrl());
 }
 
 function createAdminUrl(): string {

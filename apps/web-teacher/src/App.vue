@@ -58,7 +58,7 @@ function openScreenPage(): void {
   const url = window.location.port === '5173'
     ? `${window.location.protocol}//${window.location.hostname}:5174/`
     : `${window.location.origin}/screen/`;
-  window.open(url, '_blank', 'noopener,noreferrer');
+  window.location.assign(url);
 }
 </script>
 

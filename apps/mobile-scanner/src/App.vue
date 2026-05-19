@@ -14,21 +14,16 @@ import SessionReport from './components/SessionReport.vue';
 import TestCodes from './TestCodes.vue';
 const params = new URLSearchParams(window.location.search);
 const subjects = ['语文', '数学', '英语', '科学', '道德与法治'], testCodesMode = params.has('testCodes');
-const displayPairCodeKey = 'zhida.displayPairCode';
-const mobileSessionKey = 'zhida.mobileSessionId';
-const mobileBindTokenKey = 'zhida.mobileBindToken';
+const displayPairCodeKey = 'zhida.displayPairCode', mobileSessionKey = 'zhida.mobileSessionId', mobileBindTokenKey = 'zhida.mobileBindToken';
 const classes = ref<ClassView[]>([]);
 const questions = ref<QuestionView[]>([]);
 const session = ref<SessionDetailView | null>(null);
 const activeRun = ref<AssessmentRunView | null>(null);
 const participants = ref<QuestionParticipantView[]>([]);
 const stats = ref<QuestionStatsView | null>(null);
-const report = ref<SessionReportView | null>(null);
-const diagnosis = ref<AiDiagnosisResult | null>(null);
-const selectedQuestionIds = ref<string[]>([]);
-const newRunQuestionIds = ref<string[]>([]);
-const activeQuestionId = ref('');
-const stage = ref<SessionStage>('binding');
+const report = ref<SessionReportView | null>(null), diagnosis = ref<AiDiagnosisResult | null>(null);
+const selectedQuestionIds = ref<string[]>([]), newRunQuestionIds = ref<string[]>([]);
+const activeQuestionId = ref(''), stage = ref<SessionStage>('binding');
 const reportLoading = ref(false);
 const analysisOpen = ref(false), reportOpen = ref(false), newRunOpen = ref(false);
 const progressTimer = ref<number>();
@@ -117,6 +112,7 @@ async function bindDisplayIfNeeded(sessionId: string): Promise<void> {
   window.localStorage.setItem(mobileSessionKey, sessionId);
   window.localStorage.setItem(mobileBindTokenKey, binding.bindToken);
   window.localStorage.removeItem(displayPairCodeKey);
+  api.clearDisplayPairing();
 }
 async function handleQuestionSaved(question: QuestionView, target: 'classroom' | 'run'): Promise<void> {
   questions.value = await api.listQuestions();
@@ -261,8 +257,16 @@ function resetScanner(): void {
 }
 async function runAction(action: () => Promise<void>, done?: () => void): Promise<void> {
   failed.value = '';
-  try { await action(); } catch (error) { failed.value = error instanceof Error ? error.message : String(error); } finally { done?.(); }
+  try {
+    await action();
+  } catch (error) {
+    failed.value = error instanceof Error ? error.message : String(error);
+    if (failed.value.includes('大屏配对码已失效')) clearDisplayPairingState();
+  } finally {
+    done?.();
+  }
 }
+function clearDisplayPairingState(): void { window.localStorage.removeItem(displayPairCodeKey); api.clearDisplayPairing(); }
 function setMessage(text: string): void { message.value = text; }
 function setFailed(text: string): void { failed.value = text; }
 </script>
