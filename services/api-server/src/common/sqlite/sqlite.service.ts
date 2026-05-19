@@ -136,6 +136,7 @@ export class SqliteService {
         school TEXT,
         subject TEXT,
         status TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'teacher',
         created_at TEXT NOT NULL
       );
       CREATE TABLE IF NOT EXISTS workspaces (
@@ -225,6 +226,11 @@ export class SqliteService {
         // SQLite has no IF NOT EXISTS for ADD COLUMN in this runtime.
       }
     });
+    try {
+      this.db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'teacher'");
+    } catch {
+      // SQLite has no IF NOT EXISTS for ADD COLUMN in this runtime.
+    }
   }
 
   private ensureAnswerRunColumn(): void {

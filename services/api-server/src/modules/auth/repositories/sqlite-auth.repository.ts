@@ -11,7 +11,7 @@ import {
 interface UserRow {
   id: string; email: string; password_hash: string; display_name: string;
   phone: string | null; school: string | null; subject: string | null;
-  status: string; created_at: string;
+  status: string; role: string | null; created_at: string;
 }
 interface WorkspaceRow {
   id: string; type: string; name: string; school_name: string | null;
@@ -27,10 +27,10 @@ export class SqliteAuthRepository implements AuthRepository {
 
   async saveUser(entity: UserEntity): Promise<void> {
     this.sqlite.db.prepare(`
-      INSERT INTO users (id, email, password_hash, display_name, phone, school, subject, status, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO users (id, email, password_hash, display_name, phone, school, subject, status, role, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(entity.id, entity.email, entity.passwordHash, entity.displayName, entity.phone ?? null,
-      entity.school ?? null, entity.subject ?? null, entity.status, entity.createdAt.toISOString());
+      entity.school ?? null, entity.subject ?? null, entity.status, entity.role, entity.createdAt.toISOString());
   }
 
   async findUserByEmail(email: string): Promise<UserEntity | undefined> {
@@ -88,7 +88,9 @@ export class SqliteAuthRepository implements AuthRepository {
     return {
       id: row.id, email: row.email, passwordHash: row.password_hash, displayName: row.display_name,
       phone: row.phone ?? undefined, school: row.school ?? undefined, subject: row.subject ?? undefined,
-      status: row.status === 'disabled' ? 'disabled' : 'active', createdAt: new Date(row.created_at)
+      status: row.status === 'disabled' ? 'disabled' : 'active',
+      role: row.role === 'platform_admin' ? 'platform_admin' : 'teacher',
+      createdAt: new Date(row.created_at)
     };
   }
 

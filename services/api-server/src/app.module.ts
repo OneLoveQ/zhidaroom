@@ -10,6 +10,7 @@ import { SqliteModule } from './common/sqlite/sqlite.module.js';
 import { DisplaysModule } from './modules/displays/displays.module.js';
 import { RunsModule } from './modules/runs/runs.module.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { AdminModule } from './modules/admin/admin.module.js';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AuthModule } from './modules/auth/auth.module.js';
     RunsModule,
     AnswersModule,
     ReportsModule,
+    AdminModule,
     AiModule,
     DisplaysModule,
     SqliteModule

@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import './styles.css';
+import './scanner-actions.css';
 import './setup.css';
 import './test-codes.css';
 

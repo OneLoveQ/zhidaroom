@@ -25,7 +25,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   });
   const data = (await response.json()) as T;
   if (!response.ok) {
-    throw new Error(formatError(data));
+    throw new Error(`HTTP ${response.status}: ${formatError(data)}`);
   }
   return data;
 }

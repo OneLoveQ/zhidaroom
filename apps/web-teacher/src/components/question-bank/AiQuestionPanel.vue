@@ -2,6 +2,7 @@
 import { reactive, ref } from 'vue';
 import { api } from '../../api/client';
 import type { AiGeneratedQuestionItem, CreateQuestionPayload } from '../../types';
+import { aiFailureMessage, successMessage, thinkingMessage, type AiQuestionAction } from '../../../../../packages/ai-question-feedback';
 import './ai-question-panel.css';
 
 const emit = defineEmits<{ saved: [count: number] }>();
@@ -36,8 +37,8 @@ async function generateFromText(): Promise<void> {
       questionType: 'single_choice'
     });
     candidates.value = normalizeCandidates(result.items);
-    notice.value = result.notice;
-  });
+    notice.value = successMessage('text', candidates.value.length);
+  }, 'text');
 }
 
 async function handleImage(event: Event): Promise<void> {
@@ -53,8 +54,8 @@ async function handleImage(event: Event): Promise<void> {
       instruction: params.instruction
     });
     candidates.value = normalizeCandidates(result.items?.length ? result.items : result.item ? [result.item] : []);
-    notice.value = result.notice;
-  });
+    notice.value = successMessage('image', candidates.value.length);
+  }, 'image');
   (event.target as HTMLInputElement).value = '';
 }
 
@@ -77,8 +78,8 @@ async function saveCandidates(items: AiGeneratedQuestionItem[]): Promise<void> {
   await runAi(async () => {
     for (const item of items) await api.createQuestion(toQuestionPayload(item));
     emit('saved', items.length);
-    notice.value = `已确认入库 ${items.length} 道题。`;
-  });
+    notice.value = successMessage('save', items.length);
+  }, 'save');
 }
 
 function toQuestionPayload(item: AiGeneratedQuestionItem): CreateQuestionPayload {
@@ -120,16 +121,18 @@ function readFileAsDataUrl(file: File): Promise<string> {
   });
 }
 
-async function runAi(action: () => Promise<void>): Promise<void> {
+async function runAi(action: () => Promise<void>, actionType: AiQuestionAction): Promise<void> {
   failed.value = '';
+  notice.value = thinkingMessage(actionType);
   loading.value = true;
-  try { await action(); } catch (error) { failed.value = error instanceof Error ? error.message : String(error); } finally { loading.value = false; }
+  try { await action(); } catch (error) { failed.value = aiFailureMessage(error); } finally { loading.value = false; }
 }
 </script>
 
 <template>
   <article class="page-card">
     <div class="table-title"><h4>新增题目</h4><p :class="{ error: failed }">{{ failed || notice }}</p></div>
+    <div v-if="loading" class="ai-status"><span></span>{{ notice }}</div>
     <div class="ai-tabs">
       <button type="button" :class="{ active: mode === 'manual' }" @click="mode = 'manual'">手动输入</button>
       <button type="button" :class="{ active: mode === 'image' }" @click="mode = 'image'">拍照 + AI</button>

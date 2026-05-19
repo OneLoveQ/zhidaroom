@@ -27,6 +27,15 @@ export class RunsController {
     return this.runsService.completeRun(sessionId, runId);
   }
 
+  @Post(':runId/questions/:questionId/finish')
+  finishQuestion(
+    @Param('sessionId') sessionId: string,
+    @Param('runId') runId: string,
+    @Param('questionId') questionId: string
+  ): Promise<AssessmentRunView> {
+    return this.runsService.finishQuestion(sessionId, runId, questionId);
+  }
+
   @Post(':runId/questions/:questionId/current')
   setCurrentQuestion(
     @Param('runId') runId: string,

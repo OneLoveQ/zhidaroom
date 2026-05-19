@@ -47,6 +47,34 @@
   gap: 10px;
 }
 
+.ai-status {
+  align-items: center;
+  background: #edf7f2;
+  border: 1px solid #c8e4d7;
+  border-radius: 12px;
+  color: #235c51;
+  display: flex;
+  font-size: 13px;
+  font-weight: 850;
+  gap: 8px;
+  padding: 10px 12px;
+}
+
+.ai-status span {
+  animation: ai-spin 0.9s linear infinite;
+  border: 3px solid #c8e4d7;
+  border-top-color: #235c51;
+  border-radius: 999px;
+  height: 18px;
+  width: 18px;
+}
+
+@keyframes ai-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media (max-width: 520px) {
   .candidate-grid {
     grid-template-columns: 1fr;

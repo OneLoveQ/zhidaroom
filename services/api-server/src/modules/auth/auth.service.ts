@@ -22,7 +22,7 @@ export class AuthService {
     const now = new Date();
     const user: UserEntity = {
       id: randomUUID(), email, passwordHash: hashPassword(dto.password), displayName: dto.displayName.trim(),
-      phone: dto.phone, school: dto.school, subject: dto.subject, status: 'active', createdAt: now
+      phone: dto.phone, school: dto.school, subject: dto.subject, status: 'active', role: 'teacher', createdAt: now
     };
     const workspace: WorkspaceEntity = {
       id: randomUUID(), type: 'personal', name: `${user.displayName}的个人空间`,
@@ -43,6 +43,7 @@ export class AuthService {
     if (!user || !verifyPassword(dto.password, user.passwordHash)) {
       throw new UnauthorizedException('邮箱或密码不正确');
     }
+    if (user.status === 'disabled') throw new UnauthorizedException('账号已停用');
     const workspace = await this.repository.findDefaultWorkspace(user.id);
     if (!workspace) throw new UnauthorizedException('用户空间不存在');
     const token = await this.createSession(user.id, workspace.id);
@@ -67,7 +68,7 @@ export class AuthService {
     if (!user || !workspace || workspace.id !== session.workspaceId) {
       throw new UnauthorizedException('登录已失效');
     }
-    return { userId: user.id, workspaceId: workspace.id, email: user.email, displayName: user.displayName };
+    return { userId: user.id, workspaceId: workspace.id, email: user.email, displayName: user.displayName, role: user.role };
   }
 
   logout(token: string): Promise<void> {
@@ -88,7 +89,7 @@ export class AuthService {
   private toUserView(user: UserEntity, workspace: WorkspaceEntity): AuthUserView {
     return {
       id: user.id, email: user.email, displayName: user.displayName, phone: user.phone,
-      school: user.school, subject: user.subject, workspaceId: workspace.id,
+      school: user.school, subject: user.subject, role: user.role, workspaceId: workspace.id,
       workspaceName: workspace.name, workspaceType: workspace.type
     };
   }

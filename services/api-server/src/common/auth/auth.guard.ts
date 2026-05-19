@@ -9,6 +9,7 @@ interface SessionAuthRow {
   workspace_id: string | null;
   teacher_user_id: string | null;
   teacher_id: string;
+  role: string | null;
 }
 
 interface PairingAuthRow {
@@ -57,14 +58,19 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('手机端课堂绑定已失效');
     }
     const row = this.sqlite.db
-      .prepare('SELECT id, workspace_id, teacher_user_id, teacher_id FROM sessions WHERE id = ?')
+      .prepare(`
+        SELECT s.id, s.workspace_id, s.teacher_user_id, s.teacher_id, u.role
+        FROM sessions s LEFT JOIN users u ON u.id = s.teacher_user_id
+        WHERE s.id = ?
+      `)
       .get(sessionId) as unknown as SessionAuthRow | undefined;
     if (!row) throw new UnauthorizedException('课堂不存在');
     request.auth = {
       userId: row.teacher_user_id ?? row.teacher_id,
       workspaceId: row.workspace_id ?? 'demo_workspace',
       email: 'mobile-scanner@local',
-      displayName: '教师扫码端'
+      displayName: '教师扫码端',
+      role: row.role === 'platform_admin' ? 'platform_admin' : 'teacher'
     };
     return true;
   }
@@ -85,7 +91,8 @@ export class AuthGuard implements CanActivate {
       userId: row.teacher_user_id ?? 'teacher_demo',
       workspaceId: row.workspace_id ?? 'demo_workspace',
       email: 'mobile-pairing@local',
-      displayName: '教师扫码端'
+      displayName: '教师扫码端',
+      role: 'teacher'
     };
     return true;
   }

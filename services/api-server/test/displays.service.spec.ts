@@ -60,6 +60,16 @@ describe('DisplaysService', () => {
     expect(first.pairUrl).toContain(`displayPairCode=${first.pairCode}`);
   });
 
+  it('等待中的配对码会随着大屏轮询续期', async () => {
+    const { displaysService } = createServices();
+
+    const first = await displaysService.createOrRestorePairing('display_keep_alive');
+    const restored = await displaysService.getPairing(first.pairCode);
+
+    expect(restored.pairCode).toBe(first.pairCode);
+    expect(new Date(restored.expiresAt).getTime()).toBeGreaterThanOrEqual(new Date(first.expiresAt).getTime());
+  });
+
   it('教师手机创建课堂后把课堂绑定到大屏配对码', async () => {
     const { classesService, questionsService, sessionsService, displaysService } = createServices();
     const classView = await classesService.createClass({ grade: '一年级', name: '1班' });
@@ -120,5 +130,15 @@ describe('DisplaysService', () => {
 
     expect(unbound.status).toBe('expired');
     expect(unbound.sessionId).toBeUndefined();
+  });
+
+  it('退出课堂不会误作废新的等待配对码', async () => {
+    const { displaysService } = createServices();
+    const waiting = await displaysService.createOrRestorePairing('display_waiting');
+
+    const unchanged = await displaysService.unbindDisplay('display_waiting');
+
+    expect(unchanged.status).toBe('waiting');
+    expect(unchanged.pairCode).toBe(waiting.pairCode);
   });
 });

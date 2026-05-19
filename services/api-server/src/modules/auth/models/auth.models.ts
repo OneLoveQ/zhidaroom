@@ -7,6 +7,7 @@ export interface UserEntity {
   school?: string;
   subject?: string;
   status: 'active' | 'disabled';
+  role: 'teacher' | 'platform_admin';
   createdAt: Date;
 }
 
@@ -41,6 +42,7 @@ export interface AuthContext {
   workspaceId: string;
   email: string;
   displayName: string;
+  role: UserEntity['role'];
 }
 
 export interface AuthUserView {
@@ -50,6 +52,7 @@ export interface AuthUserView {
   phone?: string;
   school?: string;
   subject?: string;
+  role: UserEntity['role'];
   workspaceId: string;
   workspaceName: string;
   workspaceType: WorkspaceEntity['type'];

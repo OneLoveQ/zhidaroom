@@ -7,7 +7,7 @@ import {
   DisplayPairingView
 } from './display.models.js';
 
-const PAIRING_TTL_MS = 10 * 60 * 1000;
+const PAIRING_TTL_MS = 2 * 60 * 60 * 1000;
 
 @Injectable()
 export class DisplaysService {
@@ -23,8 +23,11 @@ export class DisplaysService {
     teacherUserId?: string
   ): Promise<DisplayPairingView> {
     const latest = await this.repository.findLatestByDisplayId(displayId);
-    if (latest?.status === 'bound' || (latest && !this.isExpired(latest))) {
-      return this.toView(await this.refreshExpiry(latest));
+    if (latest?.status === 'bound') {
+      return this.toView(latest);
+    }
+    if (latest?.status === 'waiting' && !this.isExpired(latest)) {
+      return this.toView(await this.extendWaitingPairing(latest));
     }
 
     const now = new Date();
@@ -67,6 +70,9 @@ export class DisplaysService {
     if (!entity) {
       throw new NotFoundException('大屏配对记录不存在');
     }
+    if (entity.status !== 'bound') {
+      return this.toView(await this.refreshExpiry(entity));
+    }
     const updated = {
       ...entity,
       sessionId: undefined,
@@ -79,11 +85,20 @@ export class DisplaysService {
 
   private async refreshExpiry(entity: DisplayPairingEntity): Promise<DisplayPairingEntity> {
     if (entity.status !== 'waiting' || !this.isExpired(entity)) {
-      return entity;
+      return entity.status === 'waiting' ? this.extendWaitingPairing(entity) : entity;
     }
     const expired = { ...entity, status: 'expired' as const };
     await this.repository.save(expired);
     return expired;
+  }
+
+  private async extendWaitingPairing(entity: DisplayPairingEntity): Promise<DisplayPairingEntity> {
+    const updated = {
+      ...entity,
+      expiresAt: new Date(Date.now() + PAIRING_TTL_MS)
+    };
+    await this.repository.save(updated);
+    return updated;
   }
 
   private async getPairingEntity(pairCode: string): Promise<DisplayPairingEntity> {

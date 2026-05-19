@@ -43,12 +43,13 @@ const showRunSummary = computed(() => Boolean(analysisOpen.value && activeRun.va
 const canCreate = computed(() => Boolean(form.classId && form.subject && form.teacherName && selectedQuestionIds.value.length));
 const canStartNewRun = computed(() => Boolean(newRunTitle.value.trim() && newRunQuestionIds.value.length));
 const scannerRuntime = useScanning({ session, activeRun, currentQuestion, refreshProgress, setMessage, setFailed });
-const { canScan, canvasRef, confirmed, decoded, scanLogs, scanning, uploading, videoRef } = scannerRuntime;
+const { canScan, canvasRef, confirmed, decoded, resetScanner, scanLogs, scanning, startScan, stopCamera, stopScan, uploadPending, uploading, videoRef } = scannerRuntime;
 onMounted(() => { if (!testCodesMode) void initialize(); });
-onBeforeUnmount(() => { scannerRuntime.stopScan(false); scannerRuntime.stopCamera(); stopProgressPolling(); });
+onBeforeUnmount(() => { stopScan(false); stopCamera(); stopProgressPolling(); });
 async function initialize(): Promise<void> {
   const pairCode = params.get('displayPairCode');
   if (pairCode) {
+    clearMobileBindingState();
     window.localStorage.setItem(displayPairCodeKey, pairCode);
     api.setDisplayPairing(pairCode);
   }
@@ -124,12 +125,6 @@ function toggleQuestion(questionId: string): void {
     ? selectedQuestionIds.value.filter((id) => id !== questionId)
     : [...selectedQuestionIds.value, questionId];
 }
-async function startScan(): Promise<void> {
-  await scannerRuntime.startScan();
-}
-function stopScan(refresh = true): void {
-  scannerRuntime.stopScan(refresh);
-}
 function openAnalysis(): void {
   stopScan();
   analysisOpen.value = true;
@@ -139,8 +134,17 @@ function resumeScan(): void {
   analysisOpen.value = false;
   void startScan();
 }
-async function uploadPending(): Promise<void> {
-  await scannerRuntime.uploadPending();
+async function finishCollection(): Promise<void> {
+  if (!session.value || !activeRun.value || !currentQuestion.value) return;
+  await runAction(async () => {
+    stopScan(false);
+    await scannerRuntime.uploadPending();
+    activeRun.value = await api.finishRunQuestion(session.value!.id, activeRun.value!.id, currentQuestion.value!.id);
+    await refreshProgress();
+    message.value = activeRun.value.status === 'completed'
+      ? '本次评测已完成，请查看综合情况。'
+      : '本题搜集已完成，请大家放下码。';
+  });
 }
 async function refreshProgress(): Promise<void> {
   if (!session.value || !currentQuestion.value) return;
@@ -251,9 +255,6 @@ function stopProgressPolling(): void {
   window.clearInterval(progressTimer.value);
   progressTimer.value = undefined;
 }
-function resetScanner(): void {
-  scannerRuntime.resetScanner();
-}
 async function runAction(action: () => Promise<void>, done?: () => void): Promise<void> {
   failed.value = '';
   try {
@@ -266,6 +267,7 @@ async function runAction(action: () => Promise<void>, done?: () => void): Promis
   }
 }
 function clearDisplayPairingState(): void { window.localStorage.removeItem(displayPairCodeKey); api.clearDisplayPairing(); if (params.has('displayPairCode')) { params.delete('displayPairCode'); window.history.replaceState({}, '', `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}${window.location.hash}`); } }
+function clearMobileBindingState(): void { window.localStorage.removeItem(mobileSessionKey); window.localStorage.removeItem(mobileBindTokenKey); api.clearMobileBinding(); }
 function setMessage(text: string): void { message.value = text; }
 function setFailed(text: string): void { failed.value = text; }
 </script>
@@ -289,7 +291,7 @@ function setFailed(text: string): void { failed.value = text; }
       <section v-else-if="stage === 'question_complete'" class="panel complete-mobile"><h2>扫码完成</h2><p>请大家放下码，系统正在进入下一题。</p></section>
       <template v-else>
         <section class="camera-card"><video ref="videoRef" playsinline muted /><div class="scan-frame"></div><canvas ref="canvasRef"></canvas></section>
-        <section class="actions"><button v-if="!scanning" type="button" :disabled="!canScan" @click="startScan"><Camera :size="19" />开始扫描</button><button v-else type="button" class="secondary" @click="stopScan()"><Square :size="18" />停止</button><button type="button" class="secondary" :disabled="uploading" @click="uploadPending"><UploadCloud :size="18" />补传缓存</button></section>
+        <section class="actions"><button v-if="!scanning" type="button" :disabled="!canScan" @click="startScan"><Camera :size="19" />开始扫描</button><button v-else type="button" class="secondary" @click="stopScan()"><Square :size="18" />停止</button><button type="button" class="secondary" :disabled="uploading" @click="uploadPending"><UploadCloud :size="18" />补传缓存</button><button type="button" class="finish-button" :disabled="uploading || !activeRun || !currentQuestion" @click="finishCollection">完成搜集</button></section>
         <section class="progress-cards"><div><span>已采集</span><strong>{{ stats?.answered ?? 0 }}</strong></div><div class="missing"><span>未采集</span><strong>{{ stats?.unanswered ?? 0 }}</strong></div><div><span>班级人数</span><strong>{{ stats?.total ?? 0 }}</strong></div></section>
         <section class="panel result-grid"><div><span>最近识别</span><strong>{{ decoded }}</strong></div><div><span>确认答案</span><strong>{{ confirmed }}</strong></div></section><section class="actions"><button type="button" :disabled="!currentQuestion" @click="openAnalysis">查看统计分析</button></section><section class="panel log-panel"><h2>最近记录</h2><p v-for="log in scanLogs" :key="log">{{ log }}</p><p v-if="!scanLogs.length">等待扫描记录</p></section>
       </template>

@@ -78,6 +78,15 @@ export class RunsService {
     return this.toView(updated);
   }
 
+  async finishQuestion(sessionId: string, runId: string, questionId: string): Promise<AssessmentRunView> {
+    const entity = await this.getRunEntity(sessionId, runId);
+    if (entity.status !== 'active') throw new BadRequestException('只有进行中的评测可以完成搜集');
+    if ((entity.currentQuestionId ?? entity.questionIds[0]) !== questionId) {
+      throw new BadRequestException('只能完成当前题目的搜集');
+    }
+    return this.advanceAfterQuestionComplete(sessionId, runId, questionId);
+  }
+
   async setCurrentQuestion(runId: string, questionId: string): Promise<AssessmentRunView> {
     const entity = await this.repository.findById(runId);
     if (!entity) throw new NotFoundException('评测不存在');

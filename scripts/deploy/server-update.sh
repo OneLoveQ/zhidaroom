@@ -40,6 +40,7 @@ ensure_executable_permissions
 ./scripts/web/teacher-install.sh
 ./scripts/web/screen-install.sh
 ./scripts/mobile/scanner-install.sh
+./scripts/admin-console/run.sh install
 
 echo "==> 构建服务与前端"
 ensure_executable_permissions
@@ -47,6 +48,7 @@ ensure_executable_permissions
 ./scripts/web/teacher-build.sh
 ./scripts/web/screen-build.sh
 ./scripts/mobile/scanner-build.sh
+./scripts/admin-console/run.sh build
 
 echo "==> 重启 API"
 if [ -f "${BT_NODE_SCRIPT}" ]; then

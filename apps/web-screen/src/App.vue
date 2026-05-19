@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 import QRCode from 'qrcode';
-import { BarChart3, BrainCircuit, Clock3, ExternalLink, LogOut, QrCode, Radio } from 'lucide-vue-next';
+import { ExternalLink, LogOut, QrCode, Radio } from 'lucide-vue-next';
 import { api } from './api';
 import { useRosterReadiness } from './composables/use-roster-readiness';
-import type { AuthUserView, DisplayPairingView, HistoryReportItem, OptionKey, ScreenState } from './types';
+import type { AuthUserView, DisplayPairingView, HistoryReportItem, ScreenState } from './types';
 import AuthGate from './components/AuthGate.vue';
 import BindWaiting from './components/BindWaiting.vue';
 import HistoryBoard from './components/HistoryBoard.vue';
+import LiveClassroomBoard from './components/LiveClassroomBoard.vue';
 import QrModal from './components/QrModal.vue';
 import ReportBoard from './components/ReportBoard.vue';
 
-const optionKeys: OptionKey[] = ['A', 'B', 'C', 'D'];
 const displayIdKey = 'zhida.displayId';
 const boundSessionKey = 'zhida.boundSessionId';
 const emptyStats = { total: 0, answered: 0, unanswered: 0, optionStats: { A: 0, B: 0, C: 0, D: 0 }, correctRate: 0 };
@@ -42,10 +42,6 @@ const params = new URLSearchParams(window.location.search);
 const showRealNames = params.get('showRealNames') === 'true';
 const title = computed(() => state.session?.title || '智答课堂大屏');
 const isHistoryReview = computed(() => Boolean(historySessionId.value && state.session?.id === historySessionId.value));
-const answeredRate = computed(() => state.stats.total ? Math.round((state.stats.answered / state.stats.total) * 100) : 0);
-const answeredParticipants = computed(() => state.participants.filter((item) => item.answered));
-const unansweredParticipants = computed(() => state.participants.filter((item) => !item.answered));
-function optionPercent(key: OptionKey): number { return state.stats.answered ? Math.round((state.stats.optionStats[key] / state.stats.answered) * 100) : 0; }
 async function resolveSessionId(): Promise<string | null> {
   const sessionId = params.get('sessionId');
   if (sessionId) return sessionId;
@@ -262,36 +258,6 @@ onUnmounted(() => { if (refreshTimer) window.clearInterval(refreshTimer); });
 
     <ReportBoard v-else-if="state.stage === 'session_report' && state.report" :report="state.report" />
 
-    <template v-else>
-      <section class="summary">
-        <div><Clock3 :size="28" /><span>答题进度</span><strong>{{ answeredRate }}%</strong></div>
-        <div><BarChart3 :size="28" /><span>已答 / 总数</span><strong>{{ state.stats.answered }} / {{ state.stats.total }}</strong></div>
-        <div><BrainCircuit :size="28" /><span>正确率</span><strong>{{ Math.round(state.stats.correctRate * 100) }}%</strong></div>
-      </section>
-      <section class="layout" v-if="state.question">
-        <article class="question-panel">
-          <p class="question-index">当前题目</p>
-          <h2>{{ state.question.stem }}</h2>
-          <div class="options">
-            <div v-for="key in optionKeys" :key="key" :class="{ answer: key === state.question.answer }">
-              <b>{{ key }}</b><span>{{ state.question.options[key] }}</span>
-            </div>
-          </div>
-        </article>
-        <article class="stats-panel">
-          <h2>选项统计</h2>
-          <div class="bars">
-            <div v-for="key in optionKeys" :key="key" class="bar-row">
-              <b>{{ key }}</b><div class="track"><span :style="{ width: `${optionPercent(key)}%` }"></span></div><strong>{{ state.stats.optionStats[key] }}</strong>
-            </div>
-          </div>
-          <p>未答 {{ state.stats.unanswered }} 人</p>
-        </article>
-      </section>
-      <section class="roster">
-        <article><h2>已答学生 {{ answeredParticipants.length }} 人</h2><div class="student-list"><div v-for="item in answeredParticipants" :key="item.studentId"><b>{{ item.displayName }}</b><span>{{ item.cardCode }} / {{ item.selectedOption }}</span></div><div v-if="!answeredParticipants.length"><b>等待采集</b><span>暂无</span></div></div></article>
-        <article class="missing-roster"><h2>未采集学生 {{ unansweredParticipants.length }} 人</h2><div class="student-list pending"><div v-for="item in unansweredParticipants" :key="item.studentId"><b>{{ item.displayName }}</b><span>{{ item.cardCode }}</span></div><div v-if="!unansweredParticipants.length"><b>已全部采集</b><span>完成</span></div></div></article>
-      </section>
-    </template>
+    <LiveClassroomBoard v-else-if="state.question" :question="state.question" :stats="state.stats" :participants="state.participants" />
   </main>
 </template>

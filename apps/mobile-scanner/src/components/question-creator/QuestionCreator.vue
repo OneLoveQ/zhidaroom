@@ -5,6 +5,7 @@ import { api } from '../../api';
 import { readFileAsDataUrl } from '../../camera-frame';
 import { createEmptyQuestionDraft, toQuestionPayload, type QuestionDraft } from '../../question-form';
 import type { AiGeneratedQuestionItem, CreateQuestionPayload, QuestionView } from '../../types';
+import { aiFailureMessage, successMessage, thinkingMessage, type AiQuestionAction } from '../../../../../packages/ai-question-feedback';
 import './question-creator.css';
 
 const props = defineProps<{ subject: string; grade: string }>();
@@ -25,8 +26,8 @@ async function saveManual(): Promise<void> {
     const saved = await api.createQuestion(toQuestionPayload(draft));
     Object.assign(draft, createEmptyQuestionDraft(props.subject, props.grade));
     emit('saved', saved);
-    notice.value = '手动题目已加入题库。';
-  });
+    notice.value = successMessage('manual');
+  }, 'manual');
 }
 
 async function generateText(): Promise<void> {
@@ -42,8 +43,8 @@ async function generateText(): Promise<void> {
       questionType: 'single_choice'
     });
     candidates.value = normalizeCandidates(result.items);
-    notice.value = result.notice;
-  });
+    notice.value = successMessage('text', candidates.value.length);
+  }, 'text');
 }
 
 async function handleImage(event: Event): Promise<void> {
@@ -61,8 +62,8 @@ async function handleImage(event: Event): Promise<void> {
       instruction: params.instruction
     });
     candidates.value = normalizeCandidates(result.items?.length ? result.items : result.item ? [result.item] : []);
-    notice.value = result.notice;
-  });
+    notice.value = successMessage('image', candidates.value.length);
+  }, 'image');
 }
 
 async function confirmCandidate(index: number): Promise<void> {
@@ -71,7 +72,7 @@ async function confirmCandidate(index: number): Promise<void> {
     candidates.value.splice(index, 1);
     emit('saved', saved);
     notice.value = '候选题已确认加入题库。';
-  });
+  }, 'save');
 }
 
 function removeCandidate(index: number): void {
@@ -94,16 +95,18 @@ function toPayload(item: AiGeneratedQuestionItem): CreateQuestionPayload {
   return { subject: item.subject, grade: item.grade, stem: item.stem, options: item.options, answer: item.answer, explanation: item.explanation, knowledgePoints: item.knowledgePoints, difficulty: item.difficulty };
 }
 
-async function runAction(action: () => Promise<void>): Promise<void> {
+async function runAction(action: () => Promise<void>, actionType: AiQuestionAction): Promise<void> {
   failed.value = '';
+  notice.value = thinkingMessage(actionType);
   loading.value = true;
-  try { await action(); } catch (error) { failed.value = error instanceof Error ? error.message : String(error); } finally { loading.value = false; }
+  try { await action(); } catch (error) { failed.value = aiFailureMessage(error); } finally { loading.value = false; }
 }
 </script>
 
 <template>
   <section class="panel">
     <div class="section-title"><h2>新增题目</h2><p :class="{ error: failed }">{{ failed || notice }}</p></div>
+    <div v-if="loading" class="ai-status"><span></span>{{ notice }}</div>
     <div class="creator-tabs">
       <button type="button" :class="{ active: mode === 'manual' }" @click="mode = 'manual'"><Plus :size="17" />手动</button>
       <button type="button" :class="{ active: mode === 'image' }" @click="mode = 'image'"><ImagePlus :size="17" />拍照 AI</button>

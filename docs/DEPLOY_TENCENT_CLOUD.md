@@ -17,6 +17,7 @@
 - 大屏端：`https://zhida.foun.fun/screen/`
 - 教师后台：`https://zhida.foun.fun/teacher/`
 - 手机扫码端：`https://zhida.foun.fun/scanner/`
+- 平台总后台：`https://zhida.foun.fun/admin/`
 - API 健康检查：`https://zhida.foun.fun/api/health`
 
 根地址 `https://zhida.foun.fun/` 会跳转到 `/screen/`。
@@ -42,6 +43,7 @@
 /screen/   -> apps/web-screen/dist
 /teacher/  -> apps/web-teacher/dist
 /scanner/  -> apps/mobile-scanner/dist
+/admin/    -> apps/admin-console/dist
 /api/      -> http://127.0.0.1:3001
 ```
 
@@ -68,8 +70,8 @@ cd /www/wwwroot/zhidaroom
 
 1. 备份 `data/zhida.dev.db`
 2. `git pull --ff-only`
-3. 安装 API、教师端、大屏端、扫码端依赖
-4. 构建 API 和三个前端
+3. 安装 API、教师端、大屏端、扫码端、总后台依赖
+4. 构建 API 和四个前端
 5. 尝试重启 PM2 项目 `api_server`
 
 如果脚本提示找不到 PM2 项目，就到宝塔 Node 项目里手动重启 `api_server`。
@@ -86,11 +88,13 @@ cd /www/wwwroot/zhidaroom
 ./scripts/web/teacher-install.sh
 ./scripts/web/screen-install.sh
 ./scripts/mobile/scanner-install.sh
+./scripts/admin-console/run.sh install
 
 ./scripts/api/build.sh
 ./scripts/web/teacher-build.sh
 ./scripts/web/screen-build.sh
 ./scripts/mobile/scanner-build.sh
+./scripts/admin-console/run.sh build
 ```
 
 前端构建完成后 Nginx 不需要重启。API 构建完成后需要在宝塔 Node 项目里重启 `api_server`，或通过 PM2 重启。
@@ -108,6 +112,7 @@ curl https://zhida.foun.fun/api/health
 - `https://zhida.foun.fun/screen/`
 - `https://zhida.foun.fun/teacher/`
 - `https://zhida.foun.fun/scanner/`
+- `https://zhida.foun.fun/admin/`
 
 真实课堂测试还要确认：
 

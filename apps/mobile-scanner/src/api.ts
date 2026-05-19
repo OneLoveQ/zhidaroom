@@ -35,7 +35,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
   });
   const data = (await response.json()) as T;
   if (!response.ok) {
-    throw new Error(formatError(data));
+    throw new Error(`HTTP ${response.status}: ${formatError(data)}`);
   }
   return data;
 }
@@ -44,6 +44,10 @@ export const api = {
   setMobileBinding(sessionId: string, bindToken: string): void {
     mobileBinding = { sessionId, bindToken };
     displayPairCode = null;
+  },
+
+  clearMobileBinding(): void {
+    mobileBinding = null;
   },
 
   setDisplayPairing(pairCode: string): void {
@@ -141,6 +145,10 @@ export const api = {
 
   completeRun(sessionId: string, runId: string): Promise<AssessmentRunView> {
     return request(`/api/sessions/${sessionId}/runs/${runId}/complete`, { method: 'POST' });
+  },
+
+  finishRunQuestion(sessionId: string, runId: string, questionId: string): Promise<AssessmentRunView> {
+    return request(`/api/sessions/${sessionId}/runs/${runId}/questions/${questionId}/finish`, { method: 'POST' });
   },
 
   setRunQuestion(sessionId: string, runId: string, questionId: string): Promise<AssessmentRunView> {

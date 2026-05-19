@@ -163,4 +163,22 @@ describe('RunsService', () => {
     expect(completed).toMatchObject({ status: 'completed', stage: 'result' });
     vi.useRealTimers();
   });
+
+  it('支持老师在未全员作答时手动完成当前题搜集', async () => {
+    const { runsService, questions, session } = await prepareServices();
+    const run = await runsService.createRun(session.id, {
+      title: '有人请假的测试',
+      type: 'exit_ticket',
+      questionIds: [questions[0]!.id, questions[1]!.id]
+    });
+
+    await runsService.startRun(session.id, run.id);
+    const waitingNext = await runsService.finishQuestion(session.id, run.id, questions[0]!.id);
+
+    expect(waitingNext).toMatchObject({
+      status: 'active',
+      stage: 'question_complete',
+      currentQuestionId: questions[0]!.id
+    });
+  });
 });

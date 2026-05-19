@@ -1,0 +1,91 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: #eef3f6;
+  color: #111c24;
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  margin: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.login-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+}
+
+.login-card {
+  background: #ffffff;
+  border: 1px solid #d9e2e8;
+  border-radius: 12px;
+  box-shadow: 0 24px 70px rgba(17, 28, 36, 0.12);
+  display: grid;
+  gap: 16px;
+  padding: 28px;
+  width: min(440px, 100%);
+}
+
+.login-card p,
+.login-card h1,
+.topbar p,
+.topbar h2,
+.sidebar p,
+.sidebar h1 {
+  margin: 0;
+}
+
+.login-card p,
+.topbar p,
+.sidebar p {
+  color: #2f8063;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.login-card form {
+  display: grid;
+  gap: 14px;
+}
+
+label {
+  color: #394853;
+  display: grid;
+  font-weight: 750;
+  gap: 7px;
+}
+
+input {
+  border: 1px solid #cad6de;
+  border-radius: 8px;
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.login-card button,
+.table-card button,
+.drawer button {
+  background: #12221d;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  font-weight: 850;
+  min-height: 40px;
+  padding: 0 14px;
+}
+
+.error,
+.login-card small {
+  color: #9a3a22;
+  font-weight: 850;
+}
