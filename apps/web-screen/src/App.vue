@@ -147,7 +147,10 @@ function openAdminPage(): void {
 }
 
 function createAdminUrl(): string {
-  return `${window.location.protocol}//${window.location.hostname}:5173/`;
+  if (window.location.port === '5174') {
+    return `${window.location.protocol}//${window.location.hostname}:5173/`;
+  }
+  return `${window.location.origin}/teacher/`;
 }
 
 async function openCurrentQr(): Promise<void> {

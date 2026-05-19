@@ -54,12 +54,11 @@ function markQuestionReady(): void {
   message.value = '题库数据已更新，可在手机端新建评测时选用。';
 }
 
-function createLocalUrl(port: number, path: string): string {
-  return `${window.location.protocol}//${window.location.hostname}:${port}${path}`;
-}
-
 function openScreenPage(): void {
-  window.open(createLocalUrl(5174, '/'), '_blank', 'noopener,noreferrer');
+  const url = window.location.port === '5173'
+    ? `${window.location.protocol}//${window.location.hostname}:5174/`
+    : `${window.location.origin}/screen/`;
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 </script>
 

@@ -5,6 +5,7 @@ import vue from '../web-teacher/node_modules/@vitejs/plugin-vue/dist/index.mjs';
 const teacherNodeModules = fileURLToPath(new URL('../web-teacher/node_modules/', import.meta.url));
 
 export default defineConfig({
+  base: '/screen/',
   plugins: [vue()],
   resolve: {
     alias: {
