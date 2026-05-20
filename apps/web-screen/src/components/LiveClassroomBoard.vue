@@ -36,7 +36,7 @@ function displayStudentName(name: string): string {
       <p class="question-index">当前题目</p>
       <h2>{{ question.stem }}</h2>
       <div class="options">
-        <div v-for="key in optionKeys" :key="key" :class="{ answer: key === question.answer }">
+        <div v-for="key in optionKeys" :key="key">
           <b>{{ key }}</b><span>{{ question.options[key] }}</span>
         </div>
       </div>
@@ -51,18 +51,24 @@ function displayStudentName(name: string): string {
           </div>
         </div>
       </article>
-      <article>
-        <h2>已答 {{ answeredParticipants.length }} 人</h2>
-        <div class="student-list">
-          <div v-for="item in answeredParticipants" :key="item.studentId"><b>{{ displayStudentName(item.displayName) }}</b><span>{{ item.cardCode }} / {{ item.selectedOption }}</span></div>
-          <div v-if="!answeredParticipants.length"><b>等待采集</b><span>暂无</span></div>
+      <article class="roster-block-panel answered">
+        <h2>已扫码 {{ answeredParticipants.length }} 人</h2>
+        <div class="student-block-grid">
+          <div v-for="item in answeredParticipants" :key="item.studentId" class="student-block done">
+            <b>{{ displayStudentName(item.displayName) }}</b>
+            <span>已扫码</span>
+          </div>
+          <div v-if="!answeredParticipants.length" class="student-block empty"><b>等待采集</b><span>暂无</span></div>
         </div>
       </article>
-      <article class="missing-roster">
-        <h2>未采集 {{ unansweredParticipants.length }} 人</h2>
-        <div class="student-list pending">
-          <div v-for="item in unansweredParticipants" :key="item.studentId"><b>{{ displayStudentName(item.displayName) }}</b><span>{{ item.cardCode }}</span></div>
-          <div v-if="!unansweredParticipants.length"><b>已全部采集</b><span>完成</span></div>
+      <article class="roster-block-panel missing-roster">
+        <h2>未扫码 {{ unansweredParticipants.length }} 人</h2>
+        <div class="student-block-grid">
+          <div v-for="item in unansweredParticipants" :key="item.studentId" class="student-block pending">
+            <b>{{ displayStudentName(item.displayName) }}</b>
+            <span>待扫码</span>
+          </div>
+          <div v-if="!unansweredParticipants.length" class="student-block complete"><b>已全部采集</b><span>完成</span></div>
         </div>
       </article>
     </section>

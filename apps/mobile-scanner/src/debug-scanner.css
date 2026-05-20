@@ -1,0 +1,152 @@
+.debug-shell {
+  background: #eef3f5;
+  color: #14202a;
+  display: grid;
+  gap: 18px;
+  min-height: 100vh;
+  padding: 18px;
+}
+
+.debug-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.debug-header p,
+.debug-header h1,
+.debug-panel h2,
+.debug-log p {
+  margin: 0;
+}
+
+.debug-header p {
+  color: #257354;
+  font-weight: 900;
+}
+
+.debug-header h1 {
+  font-size: 24px;
+}
+
+.debug-header a {
+  color: #245a72;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.debug-grid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) 340px;
+}
+
+.debug-stage,
+.debug-panel {
+  background: #ffffff;
+  border: 1px solid #d5e0e5;
+  border-radius: 8px;
+}
+
+.debug-stage {
+  display: grid;
+  min-height: 62vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.debug-stage video,
+.debug-stage canvas {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
+}
+
+.debug-stage canvas {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.debug-side,
+.debug-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.debug-panel {
+  padding: 16px;
+}
+
+.debug-panel h2 {
+  font-size: 17px;
+}
+
+.debug-panel label {
+  display: grid;
+  gap: 6px;
+  font-weight: 800;
+}
+
+.debug-panel input,
+.debug-panel select {
+  background: #f8fafb;
+  border: 1px solid #d7e1e7;
+  border-radius: 8px;
+  color: inherit;
+  font: inherit;
+  min-height: 40px;
+  padding: 0 10px;
+}
+
+.debug-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.debug-actions button {
+  background: #14202a;
+  color: #ffffff;
+}
+
+.debug-error {
+  color: #9a3f2b;
+  font-weight: 800;
+  margin: 0;
+}
+
+.metrics div {
+  align-items: center;
+  border-bottom: 1px solid #edf1f4;
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.metrics span,
+.debug-log p {
+  color: #5f6b75;
+}
+
+.metrics b {
+  font-size: 18px;
+}
+
+.debug-log {
+  align-content: start;
+}
+
+.debug-log p {
+  background: #f8fafb;
+  border: 1px solid #e4ebef;
+  border-radius: 8px;
+  font-weight: 750;
+  padding: 10px;
+}
+
+@media (max-width: 860px) {
+  .debug-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,61 @@
+.scanning-roster {
+  display: grid;
+  gap: 12px;
+}
+
+.roster-title {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.roster-title h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.roster-title span {
+  color: #9a3f2b;
+  font-weight: 900;
+}
+
+.roster-chip-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  max-height: 212px;
+  overflow: auto;
+}
+
+.roster-chip-grid span {
+  background: #fff8f3;
+  border: 1px solid #f1d5c8;
+  border-radius: 10px;
+  display: grid;
+  gap: 3px;
+  min-height: 58px;
+  padding: 9px 10px;
+}
+
+.roster-chip-grid b {
+  color: #26323e;
+  font-size: 16px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.roster-chip-grid em {
+  color: #9a3f2b;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.roster-chip-grid .complete {
+  background: #edf7f2;
+  border-color: #cce5d9;
+}
+
+.roster-chip-grid .complete em {
+  color: #246347;
+}

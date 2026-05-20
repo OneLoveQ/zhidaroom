@@ -9,11 +9,10 @@ import type { AiDiagnosisResult, AssessmentRunView, ClassView, QuestionParticipa
 import ClassroomSetup from './components/ClassroomSetup.vue';
 import NewRunSetup from './components/NewRunSetup.vue';
 import ResultAnalysis from './components/ResultAnalysis.vue';
-import RunSummary from './components/RunSummary.vue';
-import SessionReport from './components/SessionReport.vue';
-import TestCodes from './TestCodes.vue';
+import RunSummary from './components/RunSummary.vue'; import ScanningRoster from './components/ScanningRoster.vue';
+import SessionReport from './components/SessionReport.vue'; import TestCodes from './TestCodes.vue'; import DebugScanner from './DebugScanner.vue';
 const params = new URLSearchParams(window.location.search);
-const subjects = ['语文', '数学', '英语', '科学', '道德与法治'], testCodesMode = params.has('testCodes');
+const subjects = ['语文', '数学', '英语', '科学', '道德与法治'], testCodesMode = params.has('testCodes'), debugScannerMode = params.has('debugScanner');
 const displayPairCodeKey = 'zhida.displayPairCode', mobileSessionKey = 'zhida.mobileSessionId', mobileBindTokenKey = 'zhida.mobileBindToken';
 const classes = ref<ClassView[]>([]);
 const questions = ref<QuestionView[]>([]);
@@ -43,7 +42,7 @@ const canCreate = computed(() => Boolean(form.classId && form.subject && form.te
 const canStartNewRun = computed(() => Boolean(newRunTitle.value.trim() && newRunQuestionIds.value.length));
 const scannerRuntime = useScanning({ session, activeRun, currentQuestion, refreshProgress, setMessage, setFailed });
 const { canScan, canvasRef, confirmed, decoded, resetScanner, scanLogs, scanning, startScan, stopCamera, stopScan, uploadPending, uploading, videoRef } = scannerRuntime;
-onMounted(() => { if (!testCodesMode) void initialize(); });
+onMounted(() => { if (!testCodesMode && !debugScannerMode) void initialize(); });
 onBeforeUnmount(() => { stopScan(false); stopCamera(); stopProgressPolling(); });
 async function initialize(): Promise<void> {
   const pairCode = params.get('displayPairCode');
@@ -273,6 +272,7 @@ function setFailed(text: string): void { failed.value = text; }
 </script>
 <template>
   <TestCodes v-if="testCodesMode" />
+  <DebugScanner v-else-if="debugScannerMode" />
   <main v-else class="scanner-shell">
     <header class="hero">
       <p>教师扫码端</p>
@@ -292,7 +292,7 @@ function setFailed(text: string): void { failed.value = text; }
       <template v-else>
         <section class="camera-card"><video ref="videoRef" playsinline muted /><div class="scan-frame"></div><canvas ref="canvasRef"></canvas></section>
         <section class="actions"><button v-if="!scanning" type="button" :disabled="!canScan" @click="startScan"><Camera :size="19" />开始扫描</button><button v-else type="button" class="secondary" @click="stopScan()"><Square :size="18" />停止</button><button type="button" class="secondary" :disabled="uploading" @click="uploadPending"><UploadCloud :size="18" />补传缓存</button><button type="button" class="finish-button" :disabled="uploading || !activeRun || !currentQuestion" @click="finishCollection">完成搜集</button></section>
-        <section class="progress-cards"><div><span>已采集</span><strong>{{ stats?.answered ?? 0 }}</strong></div><div class="missing"><span>未采集</span><strong>{{ stats?.unanswered ?? 0 }}</strong></div><div><span>班级人数</span><strong>{{ stats?.total ?? 0 }}</strong></div></section>
+        <ScanningRoster :stats="stats" :participants="participants" />
         <section class="panel result-grid"><div><span>最近识别</span><strong>{{ decoded }}</strong></div><div><span>确认答案</span><strong>{{ confirmed }}</strong></div></section><section class="actions"><button type="button" :disabled="!currentQuestion" @click="openAnalysis">查看统计分析</button></section><section class="panel log-panel"><h2>最近记录</h2><p v-for="log in scanLogs" :key="log">{{ log }}</p><p v-if="!scanLogs.length">等待扫描记录</p></section>
       </template>
     </template>

@@ -83,10 +83,6 @@
   margin-bottom: 16px;
 }
 
-.collection-row .student-list {
-  max-height: 180px;
-}
-
 .collection-row .stats-panel h2 {
   margin-bottom: 16px;
 }
@@ -102,6 +98,58 @@
 
 .collection-row .track {
   height: 20px;
+}
+
+.roster-block-panel h2 {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.student-block-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  max-height: 214px;
+  overflow: auto;
+}
+
+.student-block {
+  background: #f4faf7;
+  border: 2px solid #8ac7a8;
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  min-height: 68px;
+  padding: 10px;
+}
+
+.student-block b {
+  color: #122018;
+  font-size: clamp(18px, 1.25vw, 26px);
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.student-block span {
+  color: #287250;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.student-block.pending {
+  background: #fff6f1;
+  border-color: #e7a082;
+}
+
+.student-block.pending span {
+  color: #a1432c;
+}
+
+.student-block.empty,
+.student-block.complete {
+  border-style: dashed;
+  color: #64717d;
 }
 
 @media (max-width: 980px) {

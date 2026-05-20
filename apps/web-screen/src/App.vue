@@ -39,7 +39,7 @@ const { checkingRosterData, hasRosterData, refreshRosterReadiness } = useRosterR
 let refreshTimer: number | undefined;
 
 const params = new URLSearchParams(window.location.search);
-const showRealNames = params.get('showRealNames') === 'true';
+const showRealNames = true;
 const title = computed(() => state.session?.title || '智答课堂大屏');
 const isHistoryReview = computed(() => Boolean(historySessionId.value && state.session?.id === historySessionId.value));
 async function resolveSessionId(): Promise<string | null> {
