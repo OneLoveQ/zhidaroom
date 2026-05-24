@@ -11,6 +11,7 @@
 - Node 路径：`/www/server/nodejs/v22.22.3/bin`
 - API 端口：`3001`
 - API 进程：宝塔 Node 项目 `api_server`
+- 扫码端公开基地址：`SCANNER_PUBLIC_BASE_URL=https://zhida.foun.fun/scanner`
 
 ## 访问地址
 
@@ -33,6 +34,14 @@
 - 宝塔 Node 项目配置
 
 这些文件不会被 `git pull` 覆盖。更新代码前，仍建议备份 SQLite 数据库。
+
+服务器 `.env` 中的 `SCANNER_PUBLIC_BASE_URL` 必须使用正式扫码端地址：
+
+```text
+SCANNER_PUBLIC_BASE_URL="https://zhida.foun.fun/scanner"
+```
+
+不要在正式环境使用 `cpolar` 或本地调试隧道域名，否则大屏二维码会跳转到测试地址。
 
 ## Nginx 路由
 
