@@ -270,7 +270,9 @@ small {
   }
 
   .sidebar {
+    height: auto;
     min-height: auto;
+    position: static;
   }
 
   .step-strip,

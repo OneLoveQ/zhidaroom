@@ -130,6 +130,9 @@ function formatError(data: unknown): string {
 
 function translateMessage(message: string): string {
   const map: Record<string, string> = {
+    'The string did not match the expected pattern.': '链接格式不正确，请重新扫码或刷新页面',
+    'Failed to fetch': '网络请求失败，请检查服务是否已启动',
+    'Load failed': '网络请求失败，请检查网络连接',
     'email must be an email': '请输入正确的邮箱地址',
     'password must be a string': '请输入密码',
     'password must be longer than or equal to 6 characters': '密码至少需要 6 位',
@@ -143,4 +146,10 @@ function translateMessage(message: string): string {
     '请先登录': '请先登录'
   };
   return map[message] ?? message;
+}
+
+export function toChineseError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  if (message.startsWith('HTTP ')) return message;
+  return translateMessage(message);
 }

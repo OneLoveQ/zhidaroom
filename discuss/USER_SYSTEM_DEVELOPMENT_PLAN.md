@@ -200,7 +200,7 @@ flowchart LR
 手机扫码 URL 可以是：
 
 ```text
-https://780d4133.r30.cpolar.top/mobile-bind?sessionId=xxx&bindToken=yyy
+https://zhida.cpolar.top/mobile-bind?sessionId=xxx&bindToken=yyy
 ```
 
 后端校验：

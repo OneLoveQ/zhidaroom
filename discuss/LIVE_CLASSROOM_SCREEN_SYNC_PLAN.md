@@ -12,7 +12,7 @@
    微信浏览器访问移动端时使用：
 
    ```text
-   https://780d4133.r30.cpolar.top
+   https://zhida.cpolar.top
    ```
 
    二维码地址在此基础上追加课堂参数。
@@ -75,13 +75,13 @@ interface Session {
 ### 二维码内容
 
 ```text
-https://780d4133.r30.cpolar.top/?sessionId=xxx&classroomCode=xxx
+https://zhida.cpolar.top/?sessionId=xxx&classroomCode=xxx
 ```
 
 如果要进入学生测试码页：
 
 ```text
-https://780d4133.r30.cpolar.top/?testCodes&sessionId=xxx&classroomCode=xxx
+https://zhida.cpolar.top/?testCodes&sessionId=xxx&classroomCode=xxx
 ```
 
 ### 大屏展示策略
@@ -278,7 +278,7 @@ MVP 先用轮询，不上 WebSocket：
 ## MVP 先做
 
 - 大屏展示微信绑定二维码。
-- 二维码使用 `https://780d4133.r30.cpolar.top` 并追加课堂参数。
+- 二维码使用 `https://zhida.cpolar.top` 并追加课堂参数。
 - 大屏和手机都用 `sessionId` 绑定同一课堂。
 - 当前题全员完成后自动进入下一题。
 - 全部题完成后自动进入整节课统计分析。

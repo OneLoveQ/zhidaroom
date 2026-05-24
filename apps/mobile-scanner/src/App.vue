@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue';
 import { Camera, Square, UploadCloud } from 'lucide-vue-next';
-import { api } from './api';
+import { api, toChineseError } from './api';
 import { createClassroomCode } from './session-code';
 import { applyTeacherPrefs, saveTeacherPrefs } from './teacher-prefs';
 import { useScanning } from './composables/use-scanning';
@@ -259,7 +259,7 @@ async function runAction(action: () => Promise<void>, done?: () => void): Promis
   try {
     await action();
   } catch (error) {
-    failed.value = error instanceof Error ? error.message : String(error);
+    failed.value = toChineseError(error);
     if (failed.value.includes('大屏配对码已失效')) clearDisplayPairingState();
   } finally {
     done?.();

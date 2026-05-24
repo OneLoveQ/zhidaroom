@@ -1,6 +1,6 @@
 import { computed, onBeforeUnmount, ref, type ComputedRef, type Ref } from 'vue';
 import { ScanSession } from '../../../../services/cv-service/src/scan-session';
-import { api } from '../api';
+import { api, toChineseError } from '../api';
 import { captureGrayFrame } from '../camera-frame';
 import type { AssessmentRunView, QuestionView, SessionDetailView } from '../types';
 
@@ -48,10 +48,10 @@ export function useScanning(options: ScanningOptions) {
       await ensureCamera();
       resetScanner();
       scanning.value = true;
-      timer.value = window.setInterval(() => void scanFrame(), 220);
+      timer.value = window.setInterval(() => void scanFrame(), 180);
       options.setMessage('正在实时扫描，学生举起图案即可录入。');
     } catch (error) {
-      options.setFailed(error instanceof Error ? error.message : String(error));
+      options.setFailed(toChineseError(error));
     }
   }
 
@@ -85,7 +85,7 @@ export function useScanning(options: ScanningOptions) {
       await options.refreshProgress();
       options.setMessage(`已上传 ${result.acceptedCount} 条，失败 ${result.failedCount} 条。`);
     } catch (error) {
-      options.setFailed(error instanceof Error ? error.message : String(error));
+      options.setFailed(toChineseError(error));
     } finally {
       uploading.value = false;
     }
@@ -110,7 +110,7 @@ export function useScanning(options: ScanningOptions) {
 
   async function scanFrame(): Promise<void> {
     if (!videoRef.value || !canvasRef.value || !scanner.value) return;
-    const image = captureGrayFrame(videoRef.value, canvasRef.value);
+    const image = captureGrayFrame(videoRef.value, canvasRef.value, 720);
     if (!image) return;
     const result = scanner.value.acceptFrame(image);
     const decodedItems = result.decodedList ?? (result.decoded ? [result.decoded] : []);

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
-import { api } from '../api/client';
+import { api, toChineseError } from '../api/client';
 import { downloadClassCardsPdf } from '../card-pdf';
 import { downloadExcel, readCell, readExcelRows, type ExcelRow } from '../excel';
 import type { ClassView, StudentImportItem, StudentView, UpdateStudentPayload } from '../types';
@@ -204,7 +204,7 @@ async function runAction(action: () => Promise<void>, done?: () => void): Promis
   try {
     await action();
   } catch (error) {
-    failed.value = error instanceof Error ? error.message : String(error);
+    failed.value = toChineseError(error);
   } finally {
     done?.();
   }

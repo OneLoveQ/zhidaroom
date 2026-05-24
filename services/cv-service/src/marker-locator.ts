@@ -6,6 +6,11 @@ interface Bounds {
   maxX: number;
   maxY: number;
   count: number;
+  sumX: number;
+  sumY: number;
+  sumXX: number;
+  sumYY: number;
+  sumXY: number;
 }
 
 export interface LocateOptions {
@@ -13,6 +18,7 @@ export interface LocateOptions {
   minDarkPixels?: number;
   maxMarkers?: number;
   minSide?: number;
+  rotatedCandidates?: boolean;
 }
 
 export function locateMarkerCorners(
@@ -30,12 +36,13 @@ export function locateMarkerCornersList(
   const minDarkPixels = options.minDarkPixels ?? 40;
   const maxMarkers = options.maxMarkers ?? 80;
   const minSide = options.minSide ?? 18;
+  const rotatedCandidates = options.rotatedCandidates ?? false;
 
   return findDarkComponents(image, threshold, minDarkPixels, minSide)
     .sort((left, right) => area(right) - area(left))
     .slice(0, maxMarkers)
     .sort((left, right) => left.minY - right.minY || left.minX - right.minX)
-    .map(toCorners);
+    .flatMap((bounds) => toCornerCandidates(bounds, rotatedCandidates));
 }
 
 function findDarkComponents(
@@ -70,7 +77,7 @@ function floodDarkComponent(
 ): Bounds {
   const queue: Array<[number, number]> = [[startX, startY]];
   visited[startY * image.width + startX] = 1;
-  let bounds: Bounds = { minX: startX, minY: startY, maxX: startX, maxY: startY, count: 0 };
+  let bounds = emptyBounds(startX, startY);
 
   for (let cursor = 0; cursor < queue.length; cursor += 1) {
     const [x, y] = queue[cursor];
@@ -118,15 +125,43 @@ function area(bounds: Bounds | undefined): number {
 
 function updateBounds(bounds: Bounds | undefined, x: number, y: number): Bounds {
   if (!bounds) {
-    return { minX: x, minY: y, maxX: x, maxY: y, count: 1 };
+    return emptyBounds(x, y);
   }
   return {
     minX: Math.min(bounds.minX, x),
     minY: Math.min(bounds.minY, y),
     maxX: Math.max(bounds.maxX, x),
     maxY: Math.max(bounds.maxY, y),
-    count: bounds.count + 1
+    count: bounds.count + 1,
+    sumX: bounds.sumX + x,
+    sumY: bounds.sumY + y,
+    sumXX: bounds.sumXX + x * x,
+    sumYY: bounds.sumYY + y * y,
+    sumXY: bounds.sumXY + x * y
   };
+}
+
+function emptyBounds(x: number, y: number): Bounds {
+  return {
+    minX: x,
+    minY: y,
+    maxX: x,
+    maxY: y,
+    count: 0,
+    sumX: 0,
+    sumY: 0,
+    sumXX: 0,
+    sumYY: 0,
+    sumXY: 0
+  };
+}
+
+function toCornerCandidates(bounds: Bounds, rotatedCandidates: boolean): MarkerCorners[] {
+  const axisAligned = toCorners(bounds);
+  if (!rotatedCandidates) {
+    return [axisAligned];
+  }
+  return [...toAngleSweepCorners(bounds), ...toMomentCorners(bounds), axisAligned];
 }
 
 function toCorners(bounds: Bounds): MarkerCorners {
@@ -135,5 +170,75 @@ function toCorners(bounds: Bounds): MarkerCorners {
     topRight: { x: bounds.maxX, y: bounds.minY },
     bottomRight: { x: bounds.maxX, y: bounds.maxY },
     bottomLeft: { x: bounds.minX, y: bounds.maxY }
+  };
+}
+
+function toAngleSweepCorners(bounds: Bounds): MarkerCorners[] {
+  return [-18, -12, -6, 6, 12, 18].map((degrees) => toRotatedCorners(bounds, degrees * Math.PI / 180));
+}
+
+function toMomentCorners(bounds: Bounds): MarkerCorners[] {
+  if (bounds.count <= 0) {
+    return [];
+  }
+  const centerX = bounds.sumX / bounds.count;
+  const centerY = bounds.sumY / bounds.count;
+  const varianceX = bounds.sumXX / bounds.count - centerX * centerX;
+  const varianceY = bounds.sumYY / bounds.count - centerY * centerY;
+  const covariance = bounds.sumXY / bounds.count - centerX * centerY;
+  const angle = 0.5 * Math.atan2(2 * covariance, varianceX - varianceY);
+  if (isAxisAligned(angle)) {
+    return [];
+  }
+  return [toRotatedCorners(bounds, angle)];
+}
+
+function toRotatedCorners(bounds: Bounds, angle: number): MarkerCorners {
+  const centerX = (bounds.minX + bounds.maxX) / 2;
+  const centerY = (bounds.minY + bounds.maxY) / 2;
+
+  const width = bounds.maxX - bounds.minX + 1;
+  const height = bounds.maxY - bounds.minY + 1;
+  const projectionScale = Math.abs(Math.cos(angle)) + Math.abs(Math.sin(angle));
+  const side = Math.max(width, height) / Math.max(projectionScale, 1);
+  const half = side / 2;
+  const unitX = { x: Math.cos(angle), y: Math.sin(angle) };
+  const unitY = { x: -Math.sin(angle), y: Math.cos(angle) };
+  return orderCorners([
+    point(centerX, centerY, unitX, unitY, -half, -half),
+    point(centerX, centerY, unitX, unitY, half, -half),
+    point(centerX, centerY, unitX, unitY, half, half),
+    point(centerX, centerY, unitX, unitY, -half, half)
+  ]);
+}
+
+function isAxisAligned(angle: number): boolean {
+  const normalized = Math.abs(((angle + Math.PI / 4) % (Math.PI / 2)) - Math.PI / 4);
+  return normalized < 0.08;
+}
+
+function point(
+  centerX: number,
+  centerY: number,
+  unitX: { x: number; y: number },
+  unitY: { x: number; y: number },
+  x: number,
+  y: number
+) {
+  return {
+    x: centerX + unitX.x * x + unitY.x * y,
+    y: centerY + unitX.y * x + unitY.y * y
+  };
+}
+
+function orderCorners(points: Array<{ x: number; y: number }>): MarkerCorners {
+  const sorted = [...points].sort((left, right) => left.y - right.y);
+  const top = sorted.slice(0, 2).sort((left, right) => left.x - right.x);
+  const bottom = sorted.slice(2).sort((left, right) => left.x - right.x);
+  return {
+    topLeft: top[0],
+    topRight: top[1],
+    bottomRight: bottom[1],
+    bottomLeft: bottom[0]
   };
 }

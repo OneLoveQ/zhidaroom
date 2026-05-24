@@ -3,4 +3,5 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
-npm run dev --prefix "${ROOT_DIR}/apps/scan-debug"
+mkdir -p "${ROOT_DIR}/logs"
+npm run dev --prefix "${ROOT_DIR}/apps/scan-debug" 2>&1 | tee "${ROOT_DIR}/logs/scan-debug.log"

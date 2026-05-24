@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import { Camera, Square } from 'lucide-vue-next';
+import { toChineseError } from './api';
 import {
   captureDebugFrame,
   createDebugConfig,
@@ -69,7 +70,7 @@ async function start(): Promise<void> {
     scanning.value = true;
     timer.value = window.setInterval(scanOnce, 160);
   } catch (error) {
-    failed.value = error instanceof Error ? error.message : String(error);
+    failed.value = toChineseError(error);
   }
 }
 

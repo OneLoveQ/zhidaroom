@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { LogIn, UserPlus } from 'lucide-vue-next';
-import { api } from '../api/client';
+import { api, toChineseError } from '../api/client';
 import type { AuthUserView } from '../types';
 
 const emit = defineEmits<{ authenticated: [user: AuthUserView] }>();
@@ -39,7 +39,7 @@ async function submit(): Promise<void> {
       });
     emit('authenticated', result.user);
   } catch (error) {
-    failed.value = error instanceof Error ? error.message : String(error);
+    failed.value = toChineseError(error);
   } finally {
     loading.value = false;
   }

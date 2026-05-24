@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 import QRCode from 'qrcode';
 import { ExternalLink, LogOut, QrCode, Radio } from 'lucide-vue-next';
-import { api } from './api';
+import { api, toChineseError } from './api';
 import { useRosterReadiness } from './composables/use-roster-readiness';
 import type { AuthUserView, DisplayPairingView, HistoryReportItem, ScreenState } from './types';
 import AuthGate from './components/AuthGate.vue';
@@ -179,11 +179,11 @@ async function startScreen(): Promise<void> {
     await loadLiveData();
     refreshTimer = window.setInterval(() => {
       void loadLiveData().catch((error) => {
-        failed.value = error instanceof Error ? error.message : String(error);
+        failed.value = toChineseError(error);
       });
     }, 1000);
   } catch (error) {
-    failed.value = error instanceof Error ? error.message : String(error);
+    failed.value = toChineseError(error);
   }
 }
 

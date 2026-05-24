@@ -31,6 +31,51 @@ export function sampleMarkerCells(
   );
 }
 
+export function sampleMarkerCellsArea(
+  image: GrayImage,
+  corners: MarkerCorners,
+  threshold = 128
+): MarkerCells {
+  return Array.from({ length: 7 }, (_, y) =>
+    Array.from({ length: 7 }, (_, x) => sampleAreaBit(image, corners, x, y, threshold))
+  );
+}
+
+export function otsuThreshold(image: GrayImage): number {
+  const histogram = new Array<number>(256).fill(0);
+  image.data.forEach((value) => {
+    histogram[value] += 1;
+  });
+
+  const total = image.data.length;
+  const sum = histogram.reduce((acc, count, value) => acc + value * count, 0);
+  let backgroundWeight = 0;
+  let backgroundSum = 0;
+  let maxVariance = -1;
+  let threshold = 128;
+
+  for (let value = 0; value < 256; value += 1) {
+    backgroundWeight += histogram[value];
+    if (!backgroundWeight) {
+      continue;
+    }
+    const foregroundWeight = total - backgroundWeight;
+    if (!foregroundWeight) {
+      break;
+    }
+    backgroundSum += value * histogram[value];
+    const backgroundMean = backgroundSum / backgroundWeight;
+    const foregroundMean = (sum - backgroundSum) / foregroundWeight;
+    const variance = backgroundWeight * foregroundWeight * (backgroundMean - foregroundMean) ** 2;
+    if (variance > maxVariance) {
+      maxVariance = variance;
+      threshold = value;
+    }
+  }
+
+  return clamp(threshold, 70, 190);
+}
+
 export function renderMarkerCells(cells: MarkerCells, pixelsPerCell = 20): GrayImage {
   const size = cells.length * pixelsPerCell;
   const data = new Uint8ClampedArray(size * size);
@@ -66,6 +111,23 @@ export function placeImageOnCanvas(
     }
   }
   return { width: canvasWidth, height: canvasHeight, data };
+}
+
+function sampleAreaBit(
+  image: GrayImage,
+  corners: MarkerCorners,
+  cellX: number,
+  cellY: number,
+  threshold: number
+): Bit {
+  const offsets = [0.35, 0.5, 0.65];
+  let total = 0;
+  offsets.forEach((dy) => {
+    offsets.forEach((dx) => {
+      total += sampleGray(image, interpolate(corners, (cellX + dx) / 7, (cellY + dy) / 7));
+    });
+  });
+  return total / 9 < threshold ? 1 : 0;
 }
 
 function interpolate(corners: MarkerCorners, u: number, v: number): Point {

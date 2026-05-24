@@ -44,6 +44,23 @@ describe('ScanSession', () => {
     expect(session.hasPendingAnswers()).toBe(false);
   });
 
+  it('已确认且答案未变化时不重复进入上传队列', () => {
+    const session = new ScanSession('question_001', 'phone_001');
+    const image = createFrame(7, 'B');
+
+    session.acceptFrame(image);
+    session.acceptFrame(image);
+    session.acceptFrame(image);
+    const payload = session.createUploadPayload();
+    session.acknowledgeAnswers(payload.answers.map((answer) => answer.cardCode));
+
+    session.acceptFrame(image);
+    session.acceptFrame(image);
+    session.acceptFrame(image);
+
+    expect(session.hasPendingAnswers()).toBe(false);
+  });
+
   it('同一帧批量采集多个学生答案', () => {
     const session = new ScanSession('question_002', 'phone_001');
     const image = createMultiFrame();

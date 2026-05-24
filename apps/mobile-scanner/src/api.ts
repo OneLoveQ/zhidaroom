@@ -222,7 +222,20 @@ function mobileHeaders(): Record<string, string> {
 function formatError(data: unknown): string {
   if (typeof data === 'object' && data && 'message' in data) {
     const message = (data as { message: unknown }).message;
-    return Array.isArray(message) ? message.join('；') : String(message);
+    return Array.isArray(message) ? message.map((item) => translateMessage(String(item))).join('；') : translateMessage(String(message));
   }
-  return JSON.stringify(data);
+  return '请求失败，请稍后重试';
+}
+
+export function toChineseError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  return translateMessage(message);
+}
+
+function translateMessage(message: string): string {
+  if (message.includes('The string did not match the expected pattern.')) return '链接格式不正确，请重新扫码或刷新页面';
+  if (message.includes('Failed to fetch') || message.includes('Load failed')) return '网络请求失败，请检查服务是否已启动';
+  if (message.includes('请先登录')) return '请先登录';
+  if (message.includes('大屏配对码已失效')) return '大屏配对码已失效，请重新扫描大屏二维码';
+  return message;
 }

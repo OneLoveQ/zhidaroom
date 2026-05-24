@@ -79,7 +79,13 @@ export function scanDebugFrame(
 ): DebugFrameMetrics {
   const started = performance.now();
   const threshold = config.thresholdMode === 'adaptive' ? otsuThreshold(image) : 128;
-  const cornersList = locateMarkerCornersList(image, { threshold, minDarkPixels: 28, maxMarkers: 120, minSide: 14 });
+  const cornersList = locateMarkerCornersList(image, {
+    threshold,
+    minDarkPixels: 28,
+    maxMarkers: 120,
+    minSide: 14,
+    rotatedCandidates: true
+  });
   const decoded = cornersList
     .map((corners) => decodeObservedCells(sampleCells(image, corners, threshold, config.algorithm === 'multiSample')))
     .filter((item) => item.valid);

@@ -56,6 +56,20 @@ describe('ScanFramePipeline', () => {
       { cardCode: 'C043', selectedOption: 'C' }
     ]);
   });
+
+  it('支持轻微斜拍后的旋转码块识别', () => {
+    const pipeline = new ScanFramePipeline();
+    const marker = renderMarkerCells(orientCellsForAnswer(createMarkerCells(34), 'D'), 20);
+    const image = rotateImageOnCanvas(marker, 280, 260, { x: 96, y: 96 }, -14);
+
+    const result = pipeline.scan(image);
+
+    expect(result.decodedList).toContainEqual(expect.objectContaining({
+      cardCode: 'C034',
+      selectedOption: 'D',
+      valid: true
+    }));
+  });
 });
 
 function createMultiMarkerFrame(): GrayImage {
@@ -83,4 +97,31 @@ function pasteImage(target: GrayImage, source: GrayImage, offsetX: number, offse
       target.data[targetY * target.width + targetX] = source.data[y * source.width + x];
     }
   }
+}
+
+function rotateImageOnCanvas(
+  source: GrayImage,
+  width: number,
+  height: number,
+  center: { x: number; y: number },
+  degrees: number
+): GrayImage {
+  const data = new Uint8ClampedArray(width * height).fill(255);
+  const radians = degrees * Math.PI / 180;
+  const cos = Math.cos(-radians);
+  const sin = Math.sin(-radians);
+  const sourceCenter = { x: source.width / 2, y: source.height / 2 };
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const dx = x - center.x;
+      const dy = y - center.y;
+      const sourceX = Math.round(sourceCenter.x + dx * cos - dy * sin);
+      const sourceY = Math.round(sourceCenter.y + dx * sin + dy * cos);
+      if (sourceX >= 0 && sourceX < source.width && sourceY >= 0 && sourceY < source.height) {
+        data[y * width + x] = source.data[sourceY * source.width + sourceX];
+      }
+    }
+  }
+  return { width, height, data };
 }

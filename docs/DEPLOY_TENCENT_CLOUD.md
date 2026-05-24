@@ -59,7 +59,25 @@ git commit -m "说明本次修改"
 git push
 ```
 
-然后登录服务器执行：
+然后使用本机 SSH key 登录服务器执行：
+
+```bash
+ssh zhidaroom-cloud
+```
+
+当前推荐的 SSH 配置在开发电脑的 `~/.ssh/config` 中：
+
+```sshconfig
+Host zhidaroom-cloud
+  HostName 124.221.117.114
+  User root
+  IdentityFile ~/.ssh/id_ed25519_zhidaroom_cloud
+  IdentitiesOnly yes
+```
+
+这套配置已经验证可以免密登录服务器。不要在项目文档、代码或聊天记录中保存服务器登录密码。
+
+登录后执行更新脚本：
 
 ```bash
 cd /www/wwwroot/zhidaroom
@@ -75,6 +93,32 @@ cd /www/wwwroot/zhidaroom
 5. 尝试重启 PM2 项目 `api_server`
 
 如果脚本提示找不到 PM2 项目，就到宝塔 Node 项目里手动重启 `api_server`。
+
+也可以从本机一条命令远程触发更新：
+
+```bash
+ssh zhidaroom-cloud "cd /www/wwwroot/zhidaroom && ./scripts/deploy/server-update.sh"
+```
+
+如果切换到新的 AI 编程工具或新电脑，需要把本机公钥加入服务器：
+
+```bash
+cat ~/.ssh/id_ed25519_zhidaroom_cloud.pub | ssh root@124.221.117.114 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys && chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys"
+```
+
+完成后用下面命令验证：
+
+```bash
+ssh -o BatchMode=yes zhidaroom-cloud "echo SSH_KEY_OK && hostname && whoami"
+```
+
+预期输出应包含：
+
+```text
+SSH_KEY_OK
+VM-0-5-opencloudos
+root
+```
 
 ## 手动构建命令
 
@@ -126,4 +170,5 @@ curl https://zhida.foun.fun/api/health
 
 - 不要把 `.env`、SQLite 数据库、日志提交到 GitHub。
 - 服务器 root 密码已经在部署沟通过程中使用过，建议部署稳定后及时更换。
+- 当前没有关闭密码登录。SSH key 只是用于日常免密更新；如未来要关闭密码登录，必须先确认 key 登录可用，并保留一个已登录的服务器会话。
 - SQLite 数据库需要定期备份，当前更新脚本会在每次更新前生成本地备份。

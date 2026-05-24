@@ -9,6 +9,7 @@ export interface ScanSessionResult extends ScanFrameResult {
 export class ScanSession {
   private readonly pipeline = new ScanFramePipeline();
   private readonly collector: AnswerBatchCollector;
+  private readonly acceptedAnswers = new Map<string, string>();
 
   constructor(questionId: string, deviceId: string) {
     this.collector = new AnswerBatchCollector(questionId, deviceId);
@@ -17,7 +18,7 @@ export class ScanSession {
   acceptFrame(image: GrayImage, now = new Date()): ScanSessionResult {
     const result = this.pipeline.scan(image, now);
     (result.confirmedList ?? (result.confirmed ? [result.confirmed] : [])).forEach((answer) =>
-      this.collector.accept(answer)
+      this.acceptConfirmedAnswer(answer)
     );
     return {
       ...result,
@@ -39,5 +40,16 @@ export class ScanSession {
 
   acknowledgeAnswers(cardCodes: string[]): void {
     this.collector.acknowledge(cardCodes);
+  }
+
+  private acceptConfirmedAnswer(answer: ScanFrameResult['confirmed']): void {
+    if (!answer) {
+      return;
+    }
+    if (this.acceptedAnswers.get(answer.cardCode) === answer.selectedOption) {
+      return;
+    }
+    this.acceptedAnswers.set(answer.cardCode, answer.selectedOption);
+    this.collector.accept(answer);
   }
 }
