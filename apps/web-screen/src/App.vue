@@ -39,6 +39,7 @@ const { checkingRosterData, hasRosterData, refreshRosterReadiness } = useRosterR
 let refreshTimer: number | undefined;
 
 const params = new URLSearchParams(window.location.search);
+const appVersion = String((import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_APP_VERSION ?? 'dev');
 const showRealNames = true;
 const title = computed(() => state.session?.title || '智答课堂大屏');
 const isHistoryReview = computed(() => Boolean(historySessionId.value && state.session?.id === historySessionId.value));
@@ -216,6 +217,7 @@ onUnmounted(() => { if (refreshTimer) window.clearInterval(refreshTimer); });
         <h1>{{ title }}</h1>
       </div>
       <div class="hero-actions">
+        <small class="version-badge">v{{ appVersion }}</small>
         <button type="button" class="qr-toggle" @click="openAdminPage">
           <ExternalLink :size="20" />管理页面
         </button>

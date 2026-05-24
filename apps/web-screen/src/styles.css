@@ -22,6 +22,12 @@ body {
   gap: 24px;
   justify-content: space-between;
 }
+.version-badge {
+  color: #71817b;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
 .eyebrow,
 .question-index {
   color: #2d7668;

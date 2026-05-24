@@ -40,8 +40,10 @@ textarea {
   color: #f8fafc;
   display: grid;
   gap: 8px;
+  position: relative;
   padding: 20px;
 }
+.version-badge { color: #8394a5; font-size: 11px; font-weight: 800; position: absolute; right: 14px; top: 12px; }
 
 .hero p,
 .hero h1 {

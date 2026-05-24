@@ -11,7 +11,7 @@ import NewRunSetup from './components/NewRunSetup.vue';
 import ResultAnalysis from './components/ResultAnalysis.vue';
 import RunSummary from './components/RunSummary.vue'; import ScanningRoster from './components/ScanningRoster.vue';
 import SessionReport from './components/SessionReport.vue'; import TestCodes from './TestCodes.vue'; import DebugScanner from './DebugScanner.vue';
-const params = new URLSearchParams(window.location.search);
+const params = new URLSearchParams(window.location.search), appVersion = String((import.meta as unknown as { env: Record<string, string | undefined> }).env.VITE_APP_VERSION ?? 'dev');
 const subjects = ['语文', '数学', '英语', '科学', '道德与法治'], testCodesMode = params.has('testCodes'), debugScannerMode = params.has('debugScanner');
 const displayPairCodeKey = 'zhida.displayPairCode', mobileSessionKey = 'zhida.mobileSessionId', mobileBindTokenKey = 'zhida.mobileBindToken';
 const classes = ref<ClassView[]>([]);
@@ -275,7 +275,7 @@ function setFailed(text: string): void { failed.value = text; }
   <DebugScanner v-else-if="debugScannerMode" />
   <main v-else class="scanner-shell">
     <header class="hero">
-      <p>教师扫码端</p>
+      <small class="version-badge">v{{ appVersion }}</small><p>教师扫码端</p>
       <h1>{{ session ? session.title : '新建课堂' }}</h1>
       <span :class="{ error: failed }">{{ failed || message }}</span>
     </header>
