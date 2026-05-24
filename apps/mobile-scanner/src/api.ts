@@ -27,6 +27,7 @@ let displayPairCode: string | null = null;
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, {
     ...init,
+    credentials: 'omit',
     headers: {
       'Content-Type': 'application/json',
       ...mobileHeaders(),

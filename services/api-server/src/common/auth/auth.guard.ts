@@ -33,15 +33,15 @@ export class AuthGuard implements CanActivate {
     if (url.startsWith('/api/auth') || url.startsWith('/api/health') || url === '/api') {
       return true;
     }
-    const token = readAuthToken(request);
-    if (token) {
-      request.auth = await this.authService.resolveToken(token);
-      return true;
-    }
     if (this.resolveMobileBinding(request, url, request.method ?? 'GET')) {
       return true;
     }
     if (this.resolveDisplayPairing(request, url, request.method ?? 'GET')) {
+      return true;
+    }
+    const token = readAuthToken(request);
+    if (token) {
+      request.auth = await this.authService.resolveToken(token);
       return true;
     }
     throw new UnauthorizedException('请先登录');
