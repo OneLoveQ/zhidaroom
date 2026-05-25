@@ -38,7 +38,8 @@ export class BatchAnswersDto {
   @IsOptional()
   runId?: string;
 
-  @IsUUID()
+  @IsString()
+  @IsNotEmpty()
   questionId!: string;
 
   @IsString()

@@ -6,12 +6,12 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
-  IsUUID,
   MaxLength
 } from 'class-validator';
 
 export class CreateSessionDto {
-  @IsUUID()
+  @IsString()
+  @IsNotEmpty()
   classId!: string;
 
   @IsString()
@@ -26,7 +26,8 @@ export class CreateSessionDto {
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(10)
-  @IsUUID('4', { each: true })
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
   questionIds!: string[];
 
   @IsString()

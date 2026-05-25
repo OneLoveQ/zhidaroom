@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsIn, IsNotEmpty, IsString, IsUUID, MaxLength } from 'class-validator';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsIn, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 
 export class CreateRunDto {
   @IsString()
@@ -13,6 +13,7 @@ export class CreateRunDto {
   @IsArray()
   @ArrayMinSize(1)
   @ArrayMaxSize(20)
-  @IsUUID('4', { each: true })
+  @IsString({ each: true })
+  @IsNotEmpty({ each: true })
   questionIds!: string[];
 }

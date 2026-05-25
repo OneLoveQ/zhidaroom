@@ -60,10 +60,18 @@ async function loadLiveData(): Promise<void> {
     await loadPairing();
     return;
   }
+  const fixedSessionRoute = Boolean(params.get('sessionId') || params.get('classroomCode') || historySessionId.value);
   const live = await api.getLiveState(sessionId, showRealNames).catch(async (error) => {
     window.localStorage.removeItem(boundSessionKey);
+    if (!fixedSessionRoute && isMissingSessionError(error)) {
+      clearClassroomState();
+      pairing.value = null;
+      await loadPairing();
+      return null;
+    }
     throw error;
   });
+  if (!live) return;
   state.session = live.session;
   state.question = live.currentQuestion;
   state.stats = live.stats;
@@ -73,6 +81,21 @@ async function loadLiveData(): Promise<void> {
   state.report = live.stage === 'session_report' ? await api.getReport(sessionId).catch(() => null) : state.report;
   lastUpdated.value = new Date().toLocaleTimeString('zh-CN', { hour12: false });
   failed.value = '';
+}
+
+function clearClassroomState(): void {
+  state.session = null;
+  state.question = null;
+  state.stats = emptyStats;
+  state.report = null;
+  state.participants = [];
+  state.mobileBindUrl = '';
+  state.stage = 'unbound';
+}
+
+function isMissingSessionError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes('课堂活动不存在') || message.includes('课堂不存在');
 }
 async function loadPairing(): Promise<void> {
   await refreshRosterReadiness();

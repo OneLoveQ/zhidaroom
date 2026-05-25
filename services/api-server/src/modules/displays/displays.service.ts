@@ -24,7 +24,10 @@ export class DisplaysService {
   ): Promise<DisplayPairingView> {
     const latest = await this.repository.findLatestByDisplayId(displayId);
     if (latest?.status === 'bound') {
-      return this.toView(latest);
+      if (await this.hasUsableBoundSession(latest)) {
+        return this.toView(latest);
+      }
+      await this.repository.save({ ...latest, sessionId: undefined, status: 'expired' as const, boundAt: undefined });
     }
     if (latest?.status === 'waiting' && !this.isExpired(latest)) {
       return this.toView(await this.extendWaitingPairing(latest));
@@ -46,6 +49,11 @@ export class DisplaysService {
 
   async getPairing(pairCode: string): Promise<DisplayPairingView> {
     const entity = await this.getPairingEntity(pairCode);
+    if (entity.status === 'bound' && !(await this.hasUsableBoundSession(entity))) {
+      const expired = { ...entity, sessionId: undefined, status: 'expired' as const, boundAt: undefined };
+      await this.repository.save(expired);
+      return this.toView(expired);
+    }
     return this.toView(await this.refreshExpiry(entity));
   }
 
@@ -107,6 +115,12 @@ export class DisplaysService {
       throw new NotFoundException('大屏配对码不存在');
     }
     return entity;
+  }
+
+  private async hasUsableBoundSession(entity: DisplayPairingEntity): Promise<boolean> {
+    if (!entity.sessionId) return false;
+    const session = await this.sessionsService.findSession(entity.sessionId).catch(() => undefined);
+    return Boolean(session && !session.deletedAt);
   }
 
   private toView(entity: DisplayPairingEntity): DisplayPairingView {

@@ -141,4 +141,35 @@ describe('DisplaysService', () => {
     expect(unchanged.status).toBe('waiting');
     expect(unchanged.pairCode).toBe(waiting.pairCode);
   });
+
+  it('已绑定课堂被隐藏后，大屏会获得新的等待配对码', async () => {
+    const { classesService, questionsService, sessionsService, displaysService } = createServices();
+    const classView = await classesService.createClass({ grade: '一年级', name: '1班' });
+    const question = await questionsService.createQuestion({
+      subject: '语文',
+      grade: '一年级',
+      stem: '测试题',
+      options: { A: 'A', B: 'B', C: 'C', D: 'D' },
+      answer: 'A',
+      explanation: '解析',
+      knowledgePoints: ['测试'],
+      difficulty: '基础'
+    });
+    const session = await sessionsService.createSession({
+      classId: classView.id,
+      title: '课堂测试',
+      mode: 'exit_ticket',
+      questionIds: [question.id]
+    });
+    const pairing = await displaysService.createOrRestorePairing('display_deleted_session');
+    await displaysService.bindSession(pairing.pairCode, session.id);
+    await sessionsService.hideSession(session.id);
+
+    const expired = await displaysService.getPairing(pairing.pairCode);
+    const next = await displaysService.createOrRestorePairing('display_deleted_session');
+
+    expect(expired).toMatchObject({ status: 'expired', sessionId: undefined });
+    expect(next.status).toBe('waiting');
+    expect(next.pairCode).not.toBe(pairing.pairCode);
+  });
 });
