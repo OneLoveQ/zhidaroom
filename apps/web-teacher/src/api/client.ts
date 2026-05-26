@@ -1,5 +1,8 @@
 import type {
   ClassView,
+  AiLearningDiagnosisRecordView,
+  ClassLearningAnalysisView,
+  AiLearningDiagnosisResult,
   AiQuestionResult,
   AuthPayload,
   AuthUserView,
@@ -10,8 +13,11 @@ import type {
   ImportQuestionsResult,
   QuestionView,
   RecognizeQuestionImagePayload,
+  SessionReportView,
   StudentImportItem,
+  StudentLearningDetailView,
   StudentView,
+  LearningAnalysisRange,
   UpdateStudentPayload
 } from '../types';
 
@@ -62,6 +68,51 @@ export const api = {
 
   listClasses(): Promise<ClassView[]> {
     return request('/api/classes');
+  },
+
+  getClassLearningAnalysis(
+    classId: string,
+    range?: LearningAnalysisRange
+  ): Promise<ClassLearningAnalysisView> {
+    return request(withRange(`/api/reports/classes/${classId}/learning`, range));
+  },
+
+  getStudentLearningAnalysis(
+    classId: string,
+    studentId: string,
+    range?: LearningAnalysisRange
+  ): Promise<StudentLearningDetailView> {
+    return request(withRange(`/api/reports/classes/${classId}/students/${studentId}/learning`, range));
+  },
+
+  getSessionReport(sessionId: string): Promise<SessionReportView> {
+    return request(`/api/sessions/${sessionId}/report`);
+  },
+
+  diagnoseClassLearning(
+    classId: string,
+    range?: LearningAnalysisRange
+  ): Promise<AiLearningDiagnosisResult> {
+    return request(withRange(`/api/ai/reports/classes/${classId}/diagnose`, range), { method: 'POST' });
+  },
+
+  diagnoseStudentLearning(
+    classId: string,
+    studentId: string,
+    range?: LearningAnalysisRange
+  ): Promise<AiLearningDiagnosisResult> {
+    return request(withRange(`/api/ai/reports/classes/${classId}/students/${studentId}/diagnose`, range), { method: 'POST' });
+  },
+
+  listClassLearningHistory(classId: string): Promise<AiLearningDiagnosisRecordView[]> {
+    return request(`/api/ai/reports/classes/${classId}/diagnoses`);
+  },
+
+  listStudentLearningHistory(
+    classId: string,
+    studentId: string
+  ): Promise<AiLearningDiagnosisRecordView[]> {
+    return request(`/api/ai/reports/classes/${classId}/students/${studentId}/diagnoses`);
   },
 
   updateClass(classId: string, payload: CreateClassPayload): Promise<ClassView> {
@@ -207,4 +258,15 @@ export function toChineseError(error: unknown): string {
   const message = error instanceof Error ? error.message : String(error);
   if (message.startsWith('HTTP ')) return message;
   return translateMessage(message);
+}
+
+function withRange(url: string, range?: LearningAnalysisRange): string {
+  const params = new URLSearchParams();
+  if (range?.from) params.set('from', range.from);
+  if (range?.to) params.set('to', range.to);
+  if (range?.subject) params.set('subject', range.subject);
+  if (range?.limit) params.set('limit', String(range.limit));
+  if (range?.offset) params.set('offset', String(range.offset));
+  const query = params.toString();
+  return query ? `${url}?${query}` : url;
 }

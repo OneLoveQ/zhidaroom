@@ -1,17 +1,42 @@
 import {
   BadGatewayException,
   Injectable,
+  Optional,
   ServiceUnavailableException
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import { SessionReportView } from '../reports/models/report.models.js';
+import { SqliteService } from '../../common/sqlite/sqlite.service.js';
+import {
+  ClassLearningAnalysisView,
+  LearningAnalysisRange,
+  SessionReportView,
+  StudentLearningDetailView
+} from '../reports/models/report.models.js';
 import { MimoClient } from './clients/mimo.client.js';
 import { GenerateQuestionsDto } from './dto/generate-questions.dto.js';
 import { RecognizeQuestionImageDto } from './dto/recognize-question-image.dto.js';
 import {
+  listLearningDiagnosisRecords,
+  saveLearningDiagnosis
+} from './diagnosis-history.js';
+import {
+  buildImageQuestionPrompt,
+  buildQuestionPrompt,
+  buildSessionDiagnosisPrompt
+} from './ai-prompts.js';
+import {
+  buildClassLearningPrompt,
+  buildStudentLearningPrompt,
+  classFallbackRecommendations,
+  runLearningDiagnosis,
+  studentFallbackRecommendations
+} from './learning-diagnosis.js';
+import {
   AiDiagnosisItem,
   AiDiagnosisResult,
   AiGenerationRecord,
+  AiLearningDiagnosisRecordView,
+  AiLearningDiagnosisResult,
   GeneratedQuestionItem,
   GenerateQuestionsResult,
   RecognizeQuestionImageResult
@@ -22,12 +47,16 @@ import { extractJsonObject } from './utils/json-extractor.js';
 export class AiService {
   private readonly records: AiGenerationRecord[] = [];
 
-  constructor(private readonly mimoClient: MimoClient) {}
+  constructor(
+    private readonly mimoClient: MimoClient,
+    @Optional()
+    private readonly sqlite?: SqliteService
+  ) {}
 
   async generateQuestions(
     dto: GenerateQuestionsDto
   ): Promise<GenerateQuestionsResult> {
-    const content = await this.mimoClient.complete(this.buildPrompt(dto));
+    const content = await this.mimoClient.complete(buildQuestionPrompt(dto));
     const parsed = extractJsonObject<{ items: GeneratedQuestionItem[] }>(content);
 
     if (!Array.isArray(parsed.items)) {
@@ -50,7 +79,7 @@ export class AiService {
     dto: RecognizeQuestionImageDto
   ): Promise<RecognizeQuestionImageResult> {
     const content = await this.mimoClient.completeVision(
-      this.buildImageQuestionPrompt(dto),
+      buildImageQuestionPrompt(dto),
       dto.imageDataUrl
     );
     const parsed = extractJsonObject<{ item?: GeneratedQuestionItem; items?: GeneratedQuestionItem[] }>(content);
@@ -75,7 +104,7 @@ export class AiService {
 
   async diagnoseSessionReport(report: SessionReportView): Promise<AiDiagnosisResult> {
     try {
-      const content = await this.mimoClient.complete(this.buildDiagnosisPrompt(report));
+      const content = await this.mimoClient.complete(buildSessionDiagnosisPrompt(report));
       const parsed = extractJsonObject<{ items: AiDiagnosisItem[] }>(content);
       if (!Array.isArray(parsed.items)) {
         throw new BadGatewayException('AI 输出格式不符合课堂诊断要求');
@@ -96,52 +125,55 @@ export class AiService {
     }
   }
 
+  async diagnoseClassLearning(
+    analysis: ClassLearningAnalysisView,
+    range?: LearningAnalysisRange
+  ): Promise<AiLearningDiagnosisResult> {
+    const result = await runLearningDiagnosis({
+      scope: 'class',
+      targetId: analysis.classId,
+      prompt: buildClassLearningPrompt(analysis),
+      fallbackDiagnosis: analysis.aiDiagnosis,
+      fallbackRecommendations: classFallbackRecommendations(analysis),
+      type: 'class_learning_diagnosis',
+      complete: (prompt) => this.mimoClient.complete(prompt),
+      createRecord: (...args) => this.createRecord(...args)
+    });
+    this.saveLearningDiagnosis(result, { classId: analysis.classId, range });
+    return result;
+  }
+
+  async diagnoseStudentLearning(
+    detail: StudentLearningDetailView,
+    range?: LearningAnalysisRange
+  ): Promise<AiLearningDiagnosisResult> {
+    const result = await runLearningDiagnosis({
+      scope: 'student',
+      targetId: detail.studentId,
+      prompt: buildStudentLearningPrompt(detail),
+      fallbackDiagnosis: detail.aiDiagnosis,
+      fallbackRecommendations: studentFallbackRecommendations(detail),
+      type: 'student_learning_diagnosis',
+      complete: (prompt) => this.mimoClient.complete(prompt),
+      createRecord: (...args) => this.createRecord(...args)
+    });
+    this.saveLearningDiagnosis(result, {
+      classId: detail.classId,
+      studentId: detail.studentId,
+      range
+    });
+    return result;
+  }
+
   listRecords(): AiGenerationRecord[] {
     return [...this.records];
   }
 
-  private buildPrompt(dto: GenerateQuestionsDto): string {
-    return [
-      '你是中小学学科教研专家和 AI 教学助手。',
-      '请根据教师输入生成适合纸质答题卡作答的课堂检测题，题目必须是标准 ABCD 单选题。',
-      '必须只输出 JSON，不要输出 Markdown，不要输出解释性前后缀。',
-      'JSON 格式为 {"items":[...]}。',
-      '每道题必须包含 stem、options、answer、explanation、knowledgePoints、difficulty、commonMistakes。',
-      'options 必须包含 A、B、C、D 四个字段。',
-      'answer 必须是 A、B、C、D 之一。',
-      '题目不得超纲，不得有歧义，答案必须唯一。',
-      '四个选项必须互斥，不要使用“以上都对”“以上都不对”“无法判断”等模糊选项。',
-      '解析必须说明正确答案为什么正确，并简要指出其他选项的问题。',
-      `学科：${dto.subject}`,
-      `年级：${dto.grade}`,
-      `教材版本：${dto.textbookVersion ?? '未指定'}`,
-      `知识点：${dto.knowledgePoint}`,
-      `教师描述：${dto.description ?? '未提供'}`,
-      `题目数量：${dto.count}`,
-      `难度：${dto.difficulty}`,
-      `题型：${dto.questionType}`
-    ].join('\n');
-  }
-
-  private buildImageQuestionPrompt(dto: RecognizeQuestionImageDto): string {
-    return [
-      '请读取图片内容，并生成适合纸质答题卡采集的标准 ABCD 单选题。',
-      '图片可能是选择题，也可能是课本文字、知识点、板书、练习题或一段说明。',
-      '必须只输出 JSON，不要输出 Markdown，不要输出解释性前后缀。',
-      'JSON 格式为 {"items":[...]}。',
-      '每个 item 必须包含 stem、options、answer、explanation、knowledgePoints、difficulty、commonMistakes。',
-      'options 必须包含 A、B、C、D 四个非空字段。',
-      'answer 必须是 A、B、C、D 之一，且答案唯一。',
-      '如果图片本身是选择题，先识别原题，再整理或改写为标准 ABCD 单选题。',
-      '如果图片不是选择题，请提炼核心知识点，并围绕该知识点生成选择题。',
-      '不要使用“以上都对”“以上都不对”“无法判断”等模糊选项。',
-      '题干必须完整描述问题，不能依赖“如图所示”。',
-      `学科：${dto.subject}`,
-      `年级：${dto.grade}`,
-      `题目数量：${dto.count ?? 1}`,
-      `难度：${dto.difficulty ?? '基础'}`,
-      `教师补充要求：${dto.instruction ?? '未提供'}`
-    ].join('\n');
+  listLearningDiagnosisRecords(
+    scope: AiLearningDiagnosisRecordView['scope'],
+    targetId: string
+  ): AiLearningDiagnosisRecordView[] {
+    return listLearningDiagnosisRecords(this.sqlite, scope, targetId);
   }
 
   private normalizeGeneratedQuestion(item: GeneratedQuestionItem): GeneratedQuestionItem {
@@ -173,27 +205,6 @@ export class AiService {
     if (!['A', 'B', 'C', 'D'].includes(item.answer)) {
       throw new BadGatewayException('AI 输出答案不是 A/B/C/D');
     }
-  }
-
-  private buildDiagnosisPrompt(report: SessionReportView): string {
-    const payload = report.questions.map((item) => ({
-      questionId: item.questionId,
-      knowledgePoints: item.knowledgePoints,
-      difficulty: item.difficulty,
-      answer: item.answer,
-      stats: item.stats
-    }));
-    return [
-      '你是中小学课堂形成性评价专家。',
-      '请基于匿名聚合答题统计生成课堂错因诊断。',
-      '不得输出学生姓名、学号、卡号或任何个人身份信息。',
-      '必须只输出 JSON，不要输出 Markdown，不要输出解释性前后缀。',
-      'JSON 格式为 {"items":[...]}。',
-      '每个 item 必须包含 questionId、riskLevel、mainMisconception、evidence、teachingSuggestion、followUpAction。',
-      'riskLevel 只能是 low、medium、high。',
-      `课堂标题：${report.title}`,
-      `统计数据：${JSON.stringify(payload)}`
-    ].join('\n');
   }
 
   private createRuleDiagnosis(report: SessionReportView): AiDiagnosisItem[] {
@@ -249,5 +260,12 @@ export class AiService {
       record,
       notice: 'AI 生成内容，请教师审核后使用。'
     };
+  }
+
+  private saveLearningDiagnosis(
+    result: AiLearningDiagnosisResult,
+    options: { classId?: string; studentId?: string; range?: LearningAnalysisRange }
+  ): void {
+    saveLearningDiagnosis(this.sqlite, result, options);
   }
 }

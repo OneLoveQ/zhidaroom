@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-
+import { DatabaseSync } from 'node:sqlite';
+import { Injectable } from '@nestjs/common';
 @Injectable()
 export class SqliteService {
   readonly db: DatabaseSync;
@@ -163,6 +162,12 @@ export class SqliteService {
         expires_at TEXT NOT NULL,
         created_at TEXT NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS ai_diagnosis_records (
+        id TEXT PRIMARY KEY, scope TEXT NOT NULL, target_id TEXT NOT NULL, class_id TEXT, student_id TEXT,
+        source TEXT NOT NULL, status TEXT NOT NULL, range_from TEXT, range_to TEXT,
+        diagnosis_json TEXT NOT NULL, recommendations_json TEXT NOT NULL, created_at TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS idx_ai_diagnosis_target ON ai_diagnosis_records(scope, target_id, created_at DESC);
     `);
     this.ensureSessionColumns();
     this.ensureStudentCardScope();
@@ -222,15 +227,11 @@ export class SqliteService {
     ].forEach((statement) => {
       try {
         this.db.exec(statement);
-      } catch {
-        // SQLite has no IF NOT EXISTS for ADD COLUMN in this runtime.
-      }
+      } catch {}
     });
     try {
       this.db.exec("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'teacher'");
-    } catch {
-      // SQLite has no IF NOT EXISTS for ADD COLUMN in this runtime.
-    }
+    } catch {}
   }
 
   private ensureAnswerRunColumn(): void {

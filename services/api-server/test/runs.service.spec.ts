@@ -23,7 +23,12 @@ async function prepareServices() {
     questionsService,
     runsService
   );
-  const reportsService = new ReportsService(sessionsService, answersService, runsService);
+  const reportsService = new ReportsService(
+    sessionsService,
+    answersService,
+    classesService,
+    runsService
+  );
   const classView = await classesService.createClass({ grade: '一年级', name: '1班' });
   await classesService.importStudents(classView.id, {
     students: [

@@ -44,6 +44,11 @@ export class ClassesService {
     return (await this.repository.listClasses(workspaceId)).map((item) => this.toClassView(item));
   }
 
+  async findClassById(classId: string): Promise<ClassView | undefined> {
+    const entity = await this.repository.findClassById(classId);
+    return entity ? this.toClassView(entity) : undefined;
+  }
+
   async updateClass(classId: string, dto: UpdateClassDto): Promise<ClassView> {
     const entity = await this.repository.findClassById(classId);
     if (!entity) {

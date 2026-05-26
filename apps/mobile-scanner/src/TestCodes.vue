@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import { createMarkerCells, orientCellsForAnswer } from '../../../services/cv-service/src/card-codec';
 import type { OptionKey } from './types';
 
@@ -18,18 +18,40 @@ interface TestCodeItem {
 const options: OptionKey[] = ['A', 'B', 'C', 'D'];
 const scannerHomeUrl = window.location.pathname.startsWith('/scanner') ? '/scanner/' : '/';
 const selectedCardCode = ref('C001');
-const selectedOption = ref<OptionKey>('A');
 const mode = ref<TestMode>('wall');
 const allCardCodes = Array.from({ length: 60 }, (_, index) => `C${String(index + 1).padStart(3, '0')}`);
+const answers = reactive<Record<string, OptionKey>>(createInitialAnswers());
+const selectedOption = computed(() => answers[selectedCardCode.value] ?? 'A');
 const wallItems = computed(() =>
-  allCardCodes.map((cardCode, index) => createTestCodeItem(cardCode, options[index % options.length], index))
+  allCardCodes.map((cardCode, index) => createTestCodeItem(cardCode, answers[cardCode] ?? 'A', index))
 );
 const cells = computed(() => createAnswerCells(selectedCardCode.value, selectedOption.value));
 
 function choose(cardCode: string, option: OptionKey): void {
+  setAnswer(cardCode, option);
   selectedCardCode.value = cardCode;
-  selectedOption.value = option;
   mode.value = 'single';
+}
+
+function setAnswer(cardCode: string, option: OptionKey): void {
+  answers[cardCode] = option;
+}
+
+function setAllAnswers(option: OptionKey): void {
+  allCardCodes.forEach((cardCode) => setAnswer(cardCode, option));
+}
+
+function resetAnswerPattern(): void {
+  allCardCodes.forEach((cardCode, index) => setAnswer(cardCode, options[index % options.length]));
+}
+
+function createInitialAnswers(): Record<string, OptionKey> {
+  return Object.fromEntries(
+    Array.from({ length: 60 }, (_, index) => [
+      `C${String(index + 1).padStart(3, '0')}`,
+      options[index % options.length]
+    ])
+  ) as Record<string, OptionKey>;
 }
 
 function createTestCodeItem(cardCode: string, option: OptionKey, index: number): TestCodeItem {
@@ -61,23 +83,49 @@ function createAnswerCells(cardCode: string, option: OptionKey): number[][] {
     </header>
 
     <section class="test-code-panel compact">
+      <div class="batch-answer-tools">
+        <span>批量设置答案</span>
+        <div class="answer-switch">
+          <button
+            v-for="option in options"
+            :key="option"
+            type="button"
+            @click="setAllAnswers(option)"
+          >
+            {{ option }}
+          </button>
+        </div>
+        <button type="button" class="pattern-button" @click="resetAnswerPattern">
+          恢复 ABCD 循环
+        </button>
+      </div>
+      <div class="mode-tools">
+        <span>显示模式</span>
+        <div class="mode-switch">
+          <button type="button" :class="{ selected: mode === 'wall' }" @click="mode = 'wall'">
+            60 码墙
+          </button>
+          <button type="button" :class="{ selected: mode === 'single' }" @click="mode = 'single'">
+            单码放大
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="test-code-panel selected-code-tools">
+      <div class="section-heading">
+        <h2>当前单码</h2>
+        <span>{{ selectedCardCode }} / 选择 {{ selectedOption }}</span>
+      </div>
       <div class="answer-switch">
         <button
           v-for="option in options"
           :key="option"
           type="button"
           :class="{ selected: selectedOption === option }"
-          @click="selectedOption = option"
+          @click="setAnswer(selectedCardCode, option)"
         >
           {{ option }}
-        </button>
-      </div>
-      <div class="mode-switch">
-        <button type="button" :class="{ selected: mode === 'wall' }" @click="mode = 'wall'">
-          60 码墙
-        </button>
-        <button type="button" :class="{ selected: mode === 'single' }" @click="mode = 'single'">
-          单码放大
         </button>
       </div>
     </section>
@@ -104,6 +152,17 @@ function createAnswerCells(cardCode: string, option: OptionKey): number[][] {
           <div class="code-meta compact">
             <strong>{{ item.cardCode }}</strong>
             <span>选择 {{ item.option }}</span>
+          </div>
+          <div class="wall-answer-buttons">
+            <button
+              v-for="option in options"
+              :key="`${item.cardCode}-${option}`"
+              type="button"
+              :class="{ selected: item.option === option }"
+              @click="setAnswer(item.cardCode, option)"
+            >
+              {{ option }}
+            </button>
           </div>
         </article>
       </div>
@@ -137,7 +196,7 @@ function createAnswerCells(cardCode: string, option: OptionKey): number[][] {
             v-for="option in options"
             :key="`${cardCode}-${option}`"
             type="button"
-            :class="{ selected: cardCode === selectedCardCode && option === selectedOption }"
+            :class="{ selected: answers[cardCode] === option }"
             @click="choose(cardCode, option)"
           >
             {{ option }}

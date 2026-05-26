@@ -1,11 +1,17 @@
 import { Injectable, NotFoundException, Optional } from '@nestjs/common';
 import { AnswersService } from '../answers/answers.service.js';
+import { ClassesService } from '../classes/classes.service.js';
 import { AssessmentRunView } from '../runs/models/run.models.js';
 import { RunsService } from '../runs/runs.service.js';
 import { SessionsService } from '../sessions/sessions.service.js';
+import { buildClassLearningAnalysis } from './class-learning-analysis.js';
+import { buildStudentLearningAnalysis } from './student-learning-analysis.js';
 import {
+  ClassLearningAnalysisView,
+  LearningAnalysisRange,
   QuestionReportItem,
   SessionReportView,
+  StudentLearningDetailView,
   StudentRankingItem
 } from './models/report.models.js';
 
@@ -14,6 +20,7 @@ export class ReportsService {
   constructor(
     private readonly sessionsService: SessionsService,
     private readonly answersService: AnswersService,
+    private readonly classesService: ClassesService,
     @Optional()
     private readonly runsService?: RunsService
   ) {}
@@ -83,6 +90,31 @@ export class ReportsService {
       studentRankings: await this.createStudentRankings(sessionId, items),
       questions: questionReports
     };
+  }
+
+  async getClassLearningAnalysis(
+    classId: string,
+    range?: LearningAnalysisRange
+  ): Promise<ClassLearningAnalysisView> {
+    return buildClassLearningAnalysis(classId, {
+      answersService: this.answersService,
+      classesService: this.classesService,
+      sessionsService: this.sessionsService,
+      runsService: this.runsService
+    }, range);
+  }
+
+  async getStudentLearningAnalysis(
+    classId: string,
+    studentId: string,
+    range?: LearningAnalysisRange
+  ): Promise<StudentLearningDetailView> {
+    return buildStudentLearningAnalysis(classId, studentId, {
+      answersService: this.answersService,
+      classesService: this.classesService,
+      sessionsService: this.sessionsService,
+      runsService: this.runsService
+    }, range);
   }
 
   private async listReportRuns(sessionId: string): Promise<AssessmentRunView[]> {

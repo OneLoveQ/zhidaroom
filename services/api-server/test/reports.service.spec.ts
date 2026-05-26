@@ -14,6 +14,7 @@ async function prepareReportService(): Promise<{
   reportsService: ReportsService;
   questionIds: string[];
   sessionId: string;
+  classId: string;
 }> {
   const classesService = new ClassesService(new InMemoryClassesRepository());
   const questionsService = new QuestionsService(new InMemoryQuestionsRepository());
@@ -28,7 +29,7 @@ async function prepareReportService(): Promise<{
     classesService,
     questionsService
   );
-  const reportsService = new ReportsService(sessionsService, answersService);
+  const reportsService = new ReportsService(sessionsService, answersService, classesService);
   const createdClass = await classesService.createClass({ grade: '七年级', name: '1班' });
 
   await classesService.importStudents(createdClass.id, {
@@ -68,7 +69,8 @@ async function prepareReportService(): Promise<{
     answersService,
     reportsService,
     questionIds: [firstQuestion.id, secondQuestion.id],
-    sessionId: (await sessionsService.startSession(session.id)).id
+    sessionId: (await sessionsService.startSession(session.id)).id,
+    classId: createdClass.id
   };
 }
 
@@ -119,5 +121,114 @@ describe('ReportsService', () => {
       { displayName: '张三', correctCount: 2, correctRate: 1 },
       { displayName: '李四', correctCount: 0, correctRate: 0 }
     ]);
+  });
+
+  it('汇总班级长期学情和学生关注名单', async () => {
+    const { answersService, reportsService, questionIds, sessionId, classId } =
+      await prepareReportService();
+
+    await answersService.submitBatch(sessionId, {
+      questionId: questionIds[0]!,
+      deviceId: 'simulator_001',
+      answers: [
+        {
+          cardCode: 'C001',
+          selectedOption: 'C',
+          recognitionScore: 0.98,
+          recognizedAt: '2026-05-14T10:20:30+08:00'
+        },
+        {
+          cardCode: 'C002',
+          selectedOption: 'A',
+          recognitionScore: 0.96,
+          recognizedAt: '2026-05-14T10:20:31+08:00'
+        }
+      ]
+    });
+
+    const analysis = await reportsService.getClassLearningAnalysis(classId);
+
+    expect(analysis.summary).toMatchObject({
+      sessionCount: 1,
+      questionCount: 2,
+      studentCount: 2,
+      answeredCount: 2,
+      totalAnswerSlots: 4,
+      averageCorrectRate: 0.5,
+      participationRate: 0.5,
+      attentionStudentCount: 2
+    });
+    expect(analysis.knowledgePoints[0]).toMatchObject({
+      name: '测试知识点',
+      status: '重点讲评'
+    });
+    expect(analysis.students[0]?.displayName).toBe('李四');
+    expect(analysis.aiDiagnosis.join('')).toContain('优先讲评');
+  });
+
+  it('生成单个学生的答题诊断详情', async () => {
+    const { answersService, reportsService, questionIds, sessionId, classId } =
+      await prepareReportService();
+
+    await answersService.submitBatch(sessionId, {
+      questionId: questionIds[0]!,
+      deviceId: 'simulator_001',
+      answers: [
+        {
+          cardCode: 'C001',
+          selectedOption: 'A',
+          recognitionScore: 0.98,
+          recognizedAt: '2026-05-14T10:20:30+08:00'
+        }
+      ]
+    });
+    const classAnalysis = await reportsService.getClassLearningAnalysis(classId);
+    const studentId = classAnalysis.students.find((item) => item.displayName === '张三')!.studentId;
+
+    const detail = await reportsService.getStudentLearningAnalysis(classId, studentId);
+
+    expect(detail.summary).toMatchObject({
+      totalQuestionCount: 2,
+      answeredCount: 1,
+      correctCount: 0,
+      missedCount: 1,
+      correctRate: 0,
+      participationRate: 0.5
+    });
+    expect(detail.weakKnowledgePoints[0]).toMatchObject({
+      name: '测试知识点',
+      wrongCount: 1
+    });
+    expect(detail.recentAnswers).toHaveLength(2);
+    expect(detail.aiDiagnosis.join('')).toContain('张三');
+  });
+
+  it('支持按日期范围筛选班级和学生学情', async () => {
+    const { answersService, reportsService, questionIds, sessionId, classId } =
+      await prepareReportService();
+
+    await answersService.submitBatch(sessionId, {
+      questionId: questionIds[0]!,
+      deviceId: 'simulator_001',
+      answers: [
+        {
+          cardCode: 'C001',
+          selectedOption: 'C',
+          recognitionScore: 0.98,
+          recognizedAt: '2026-05-14T10:20:30+08:00'
+        }
+      ]
+    });
+    const full = await reportsService.getClassLearningAnalysis(classId);
+    const studentId = full.students[0]!.studentId;
+
+    const emptyClass = await reportsService.getClassLearningAnalysis(classId, { from: '2099-01-01' });
+    const emptyStudent = await reportsService.getStudentLearningAnalysis(classId, studentId, { from: '2099-01-01' });
+
+    expect(full.summary.questionCount).toBe(2);
+    expect(emptyClass.summary.questionCount).toBe(0);
+    expect(emptyClass.summary.answeredCount).toBe(0);
+    expect(emptyStudent.summary.totalQuestionCount).toBe(0);
+    expect(emptyStudent.recentAnswers).toHaveLength(0);
   });
 });

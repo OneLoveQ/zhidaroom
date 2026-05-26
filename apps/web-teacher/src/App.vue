@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { BookOpenCheck, ExternalLink, GraduationCap, LogOut } from 'lucide-vue-next';
+import { BarChart3, BookOpenCheck, ExternalLink, GraduationCap, LogOut } from 'lucide-vue-next';
 import { api } from './api/client';
 import AuthGate from './components/AuthGate.vue';
 import ClassManagement from './components/ClassManagement.vue';
+import LearningAnalysis from './components/LearningAnalysis.vue';
 import QuestionBank from './components/QuestionBank.vue';
 import type { AuthUserView } from './types';
 
-type PageKey = 'classes' | 'questions';
+type PageKey = 'classes' | 'questions' | 'analysis';
 
 const activePage = ref<PageKey>('classes');
 const currentUser = ref<AuthUserView | null>(null);
@@ -16,13 +17,16 @@ const message = ref('管理班级、学生与答题码发放。');
 
 const pages = [
   { key: 'classes', label: '班级与学生', icon: GraduationCap },
-  { key: 'questions', label: '题库管理', icon: BookOpenCheck }
+  { key: 'questions', label: '题库管理', icon: BookOpenCheck },
+  { key: 'analysis', label: '学情分析', icon: BarChart3 }
 ] as const;
 
 const pageTitle = computed(() => pages.find((page) => page.key === activePage.value)?.label ?? '班级与学生');
-const pageStatus = computed(() => activePage.value === 'classes'
-  ? '管理班级、学生与答题码发放。'
-  : '维护题库、AI 出题和 Excel 导入导出。');
+const pageStatus = computed(() => {
+  if (activePage.value === 'classes') return '管理班级、学生与答题码发放。';
+  if (activePage.value === 'questions') return '维护题库、AI 出题和 Excel 导入导出。';
+  return '汇总班级与学生长期答题表现，生成 AI 诊断基础数据。';
+});
 
 onMounted(() => void loadCurrentUser());
 
@@ -103,7 +107,8 @@ function openScreenPage(): void {
         <div class="status">{{ message || pageStatus }}</div>
       </header>
       <ClassManagement v-if="activePage === 'classes'" @class-ready="markClassReady" />
-      <QuestionBank v-else @question-ready="markQuestionReady" />
+      <QuestionBank v-else-if="activePage === 'questions'" @question-ready="markQuestionReady" />
+      <LearningAnalysis v-else />
     </section>
   </main>
 </template>

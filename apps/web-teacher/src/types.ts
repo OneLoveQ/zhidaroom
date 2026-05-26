@@ -114,3 +114,184 @@ export interface AiQuestionResult {
   items: AiGeneratedQuestionItem[];
   notice: string;
 }
+
+export interface LearningSummaryView {
+  sessionCount: number;
+  questionCount: number;
+  studentCount: number;
+  answeredCount: number;
+  totalAnswerSlots: number;
+  averageCorrectRate: number;
+  participationRate: number;
+  weakKnowledgeCount: number;
+  attentionStudentCount: number;
+}
+
+export interface KnowledgePointAnalysisItem {
+  name: string;
+  questionCount: number;
+  answeredCount: number;
+  correctCount: number;
+  correctRate: number;
+  status: '掌握较好' | '需要巩固' | '重点讲评';
+}
+
+export interface StudentLearningAnalysisItem {
+  studentId: string;
+  studentNo: string;
+  displayName: string;
+  answeredCount: number;
+  correctCount: number;
+  totalQuestionCount: number;
+  missedCount: number;
+  correctRate: number;
+  status: '稳定' | '需关注' | '参与不足';
+  weakKnowledgePoints: string[];
+}
+
+export interface RecentSessionAnalysisItem {
+  sessionId: string;
+  title: string;
+  subject?: string;
+  createdAt: string;
+  averageCorrectRate: number;
+  participationRate: number;
+}
+
+export interface ClassLearningAnalysisView {
+  classId: string;
+  className: string;
+  generatedAt: string;
+  summary: LearningSummaryView;
+  knowledgePoints: KnowledgePointAnalysisItem[];
+  students: StudentLearningAnalysisItem[];
+  recentSessions: RecentSessionAnalysisItem[];
+  totalRecentSessionCount: number;
+  aiDiagnosis: string[];
+}
+
+export interface LearningAnalysisRange {
+  from?: string;
+  to?: string;
+  subject?: string;
+  limit?: number;
+  offset?: number;
+}
+
+export interface StudentLearningDetailView {
+  classId: string;
+  className: string;
+  studentId: string;
+  studentNo: string;
+  displayName: string;
+  generatedAt: string;
+  summary: {
+    sessionCount: number;
+    totalQuestionCount: number;
+    answeredCount: number;
+    correctCount: number;
+    missedCount: number;
+    correctRate: number;
+    participationRate: number;
+    latestSessionAt?: string;
+  };
+  weakKnowledgePoints: Array<{
+    name: string;
+    totalCount: number;
+    wrongCount: number;
+    correctRate: number;
+  }>;
+  recentAnswers: Array<{
+    sessionId: string;
+    sessionTitle: string;
+    questionId: string;
+    stem: string;
+    answer: string;
+    selectedOption?: string;
+    answered: boolean;
+    isCorrect?: boolean;
+    knowledgePoints: string[];
+    createdAt: string;
+  }>;
+  aiDiagnosis: string[];
+}
+
+export interface StudentAnswerDetail {
+  questionId: string;
+  runId?: string;
+  runTitle?: string;
+  stem: string;
+  answer: string;
+  selectedOption?: 'A' | 'B' | 'C' | 'D';
+  answered: boolean;
+  isCorrect?: boolean;
+}
+
+export interface StudentRankingItem {
+  studentId: string;
+  studentNo: string;
+  displayName: string;
+  cardCode: string;
+  answeredCount: number;
+  correctCount: number;
+  totalQuestionCount: number;
+  correctRate: number;
+  answers: StudentAnswerDetail[];
+}
+
+export interface QuestionReportItem {
+  questionId: string;
+  runId?: string;
+  runTitle?: string;
+  stem: string;
+  answer: string;
+  difficulty: string;
+  knowledgePoints: string[];
+  stats: {
+    total: number;
+    answered: number;
+    unanswered: number;
+    optionStats: Record<'A' | 'B' | 'C' | 'D', number>;
+    correctRate: number;
+  };
+  misconception: string;
+  teachingSuggestion: string;
+  followUpAction: string;
+}
+
+export interface SessionReportView {
+  sessionId: string;
+  title: string;
+  status: string;
+  questionCount: number;
+  averageCorrectRate: number;
+  generatedAt: string;
+  aiNotice: string;
+  studentRankings: StudentRankingItem[];
+  questions: QuestionReportItem[];
+}
+
+export interface AiLearningDiagnosisResult {
+  scope: 'class' | 'student';
+  targetId: string;
+  generatedAt: string;
+  source: 'model' | 'rule';
+  diagnosis: string[];
+  recommendations: string[];
+  notice: string;
+}
+
+export interface AiLearningDiagnosisRecordView {
+  id: string;
+  scope: 'class' | 'student';
+  targetId: string;
+  classId?: string;
+  studentId?: string;
+  source: 'model' | 'rule';
+  status: 'success' | 'fallback';
+  rangeFrom?: string;
+  rangeTo?: string;
+  diagnosis: string[];
+  recommendations: string[];
+  createdAt: string;
+}

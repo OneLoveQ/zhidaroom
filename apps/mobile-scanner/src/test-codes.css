@@ -63,20 +63,41 @@
 
 .answer-switch button,
 .student-code-row button,
-.mode-switch button {
+.mode-switch button,
+.pattern-button,
+.wall-answer-buttons button {
   background: #edf2f6;
   color: #26323e;
 }
 
 .answer-switch button.selected,
 .student-code-row button.selected,
-.mode-switch button.selected {
+.mode-switch button.selected,
+.wall-answer-buttons button.selected {
   background: #17212b;
   color: #ffffff;
 }
 
 .mode-switch {
   grid-template-columns: repeat(2, 1fr);
+}
+
+.batch-answer-tools,
+.mode-tools,
+.selected-code-tools {
+  display: grid;
+  gap: 8px;
+}
+
+.batch-answer-tools > span,
+.mode-tools > span {
+  color: #65717d;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.pattern-button {
+  min-height: 40px;
 }
 
 .big-code-card {
@@ -225,6 +246,19 @@
 
 .wall-code-card:nth-child(9n) {
   margin-bottom: 5px;
+}
+
+.wall-answer-buttons {
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.wall-answer-buttons button {
+  border-radius: 7px;
+  font-size: 11px;
+  min-height: 28px;
+  padding: 0;
 }
 
 @media (max-width: 560px) {

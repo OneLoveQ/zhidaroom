@@ -39,7 +39,12 @@ export interface AiDiagnosisItem {
 
 export interface AiGenerationRecord {
   id: string;
-  type: 'question_generation' | 'question_image_recognition' | 'session_diagnosis';
+  type:
+    | 'question_generation'
+    | 'question_image_recognition'
+    | 'session_diagnosis'
+    | 'class_learning_diagnosis'
+    | 'student_learning_diagnosis';
   sessionId?: string;
   status: 'success' | 'fallback';
   source: 'model' | 'rule';
@@ -53,4 +58,30 @@ export interface AiDiagnosisResult {
   items: AiDiagnosisItem[];
   record: AiGenerationRecord;
   notice: string;
+}
+
+export interface AiLearningDiagnosisResult {
+  scope: 'class' | 'student';
+  targetId: string;
+  generatedAt: string;
+  source: 'model' | 'rule';
+  diagnosis: string[];
+  recommendations: string[];
+  record: AiGenerationRecord;
+  notice: string;
+}
+
+export interface AiLearningDiagnosisRecordView {
+  id: string;
+  scope: 'class' | 'student';
+  targetId: string;
+  classId?: string;
+  studentId?: string;
+  source: 'model' | 'rule';
+  status: 'success' | 'fallback';
+  rangeFrom?: string;
+  rangeTo?: string;
+  diagnosis: string[];
+  recommendations: string[];
+  createdAt: string;
 }

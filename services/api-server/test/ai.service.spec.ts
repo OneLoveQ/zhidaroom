@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { ServiceUnavailableException } from '@nestjs/common';
 import { AiService } from '../src/modules/ai/ai.service.js';
 import { MimoClient } from '../src/modules/ai/clients/mimo.client.js';
-import { SessionReportView } from '../src/modules/reports/models/report.models.js';
+import {
+  ClassLearningAnalysisView,
+  SessionReportView,
+  StudentLearningDetailView
+} from '../src/modules/reports/models/report.models.js';
 
 class FakeMimoClient extends MimoClient {
   override complete(): Promise<string> {
@@ -35,6 +39,40 @@ class UnavailableMimoClient extends MimoClient {
   }
 }
 
+class LearningMimoClient extends MimoClient {
+  override complete(): Promise<string> {
+    return Promise.resolve(JSON.stringify({
+      diagnosis: ['班级在诗句理解上错误集中。'],
+      recommendations: ['下节课先讲评高频错题。']
+    }));
+  }
+}
+
+class FakeSqlite {
+  readonly rows: unknown[][] = [];
+  readonly db = {
+    prepare: (sql: string) => ({
+      run: (...values: unknown[]) => {
+        this.rows.push(values);
+      },
+      all: () => this.rows.map((values) => ({
+        id: values[0],
+        scope: values[1],
+        target_id: values[2],
+        class_id: values[3],
+        student_id: values[4],
+        source: values[5],
+        status: values[6],
+        range_from: values[7],
+        range_to: values[8],
+        diagnosis_json: values[9],
+        recommendations_json: values[10],
+        created_at: values[11]
+      }))
+    })
+  };
+}
+
 function createReport(): SessionReportView {
   return {
     sessionId: 'session_001',
@@ -65,6 +103,74 @@ function createReport(): SessionReportView {
         followUpAction: '用 2 道变式题区分相近概念。'
       }
     ]
+  };
+}
+
+function createClassAnalysis(): ClassLearningAnalysisView {
+  return {
+    classId: 'class_001',
+    className: '三年级1班',
+    generatedAt: '2026-05-25T10:00:00+08:00',
+    summary: {
+      sessionCount: 2,
+      questionCount: 4,
+      studentCount: 2,
+      answeredCount: 6,
+      totalAnswerSlots: 8,
+      averageCorrectRate: 0.5,
+      participationRate: 0.75,
+      weakKnowledgeCount: 1,
+      attentionStudentCount: 1
+    },
+    knowledgePoints: [
+      {
+        name: '诗句理解',
+        questionCount: 2,
+        answeredCount: 4,
+        correctCount: 1,
+        correctRate: 0.25,
+        status: '重点讲评'
+      }
+    ],
+    students: [
+      {
+        studentId: 'student_001',
+        studentNo: '1001',
+        displayName: '张三',
+        answeredCount: 2,
+        correctCount: 0,
+        totalQuestionCount: 4,
+        missedCount: 2,
+        correctRate: 0,
+        status: '参与不足',
+        weakKnowledgePoints: ['诗句理解']
+      }
+    ],
+    recentSessions: [],
+    aiDiagnosis: ['班级累计正确率为 50%。']
+  };
+}
+
+function createStudentDetail(): StudentLearningDetailView {
+  return {
+    classId: 'class_001',
+    className: '三年级1班',
+    studentId: 'student_001',
+    studentNo: '1001',
+    displayName: '张三',
+    generatedAt: '2026-05-25T10:00:00+08:00',
+    summary: {
+      sessionCount: 2,
+      totalQuestionCount: 4,
+      answeredCount: 2,
+      correctCount: 0,
+      missedCount: 2,
+      correctRate: 0,
+      participationRate: 0.5
+    },
+    weakKnowledgePoints: [{ name: '诗句理解', totalCount: 2, wrongCount: 2, correctRate: 0 }],
+    recentAnswers: [],
+    aiDiagnosis: ['张三 累计参与 2/4 题。']
   };
 }
 
@@ -103,5 +209,47 @@ describe('AiService', () => {
     });
     expect(JSON.stringify(result)).not.toContain('张三');
     expect(service.listRecords()).toHaveLength(1);
+  });
+
+  it('为班级累计学情生成大模型诊断', async () => {
+    const service = new AiService(new LearningMimoClient());
+
+    const result = await service.diagnoseClassLearning(createClassAnalysis());
+
+    expect(result.source).toBe('model');
+    expect(result.record.type).toBe('class_learning_diagnosis');
+    expect(result.diagnosis[0]).toContain('诗句理解');
+    expect(result.recommendations[0]).toContain('讲评');
+  });
+
+  it('保存并读取学情 AI 诊断历史', async () => {
+    const sqlite = new FakeSqlite();
+    const service = new AiService(new LearningMimoClient(), sqlite as never);
+
+    await service.diagnoseClassLearning(createClassAnalysis(), {
+      from: '2026-05-01',
+      to: '2026-05-25'
+    });
+    const records = service.listLearningDiagnosisRecords('class', 'class_001');
+
+    expect(records[0]).toMatchObject({
+      scope: 'class',
+      targetId: 'class_001',
+      rangeFrom: '2026-05-01',
+      rangeTo: '2026-05-25',
+      source: 'model'
+    });
+    expect(records[0]?.diagnosis[0]).toContain('诗句理解');
+  });
+
+  it('学生个人学情在大模型不可用时提供规则兜底建议', async () => {
+    const service = new AiService(new UnavailableMimoClient());
+
+    const result = await service.diagnoseStudentLearning(createStudentDetail());
+
+    expect(result.source).toBe('rule');
+    expect(result.record.type).toBe('student_learning_diagnosis');
+    expect(result.diagnosis[0]).toContain('张三');
+    expect(result.recommendations[0]).toContain('诗句理解');
   });
 });
