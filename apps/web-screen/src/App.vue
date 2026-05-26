@@ -119,12 +119,17 @@ async function loadPairing(): Promise<void> {
 async function loadHistoryReports(): Promise<void> {
   const sessions = (await api.listSessions())
     .filter((item) => item.stage === 'session_report' || item.status === 'ended')
+    .sort((left, right) => sessionReviewTime(right) - sessionReviewTime(left))
     .slice(0, 12);
   const reports = await Promise.all(sessions.map(async (session) => {
     const report = await api.getReport(session.id).catch(() => null);
     return report ? { session, report } : null;
   }));
   historyReports.value = reports.filter((item): item is HistoryReportItem => Boolean(item));
+}
+
+function sessionReviewTime(session: { endedAt?: string; createdAt: string }): number {
+  return new Date(session.endedAt ?? session.createdAt).getTime();
 }
 
 function getDisplayId(): string {

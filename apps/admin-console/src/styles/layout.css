@@ -41,23 +41,29 @@
 }
 
 .workspace {
+  align-content: start;
   display: grid;
   gap: 18px;
+  grid-auto-rows: max-content;
   padding: 24px;
 }
 
 .topbar {
-  align-items: center;
+  align-items: end;
   background: #ffffff;
   border: 1px solid #d9e2e8;
   border-radius: 10px;
   display: flex;
+  gap: 20px;
   justify-content: space-between;
-  padding: 18px;
+  min-height: 112px;
+  padding: 18px 22px;
 }
 
 .topbar h2 {
-  font-size: 28px;
+  font-size: 26px;
+  line-height: 1.15;
+  margin: 4px 0 8px;
 }
 
 .topbar small {
@@ -125,5 +131,6 @@
   .topbar {
     align-items: stretch;
     display: grid;
+    min-height: 0;
   }
 }

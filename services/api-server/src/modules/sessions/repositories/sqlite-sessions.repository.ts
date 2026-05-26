@@ -74,7 +74,7 @@ export class SqliteSessionsRepository implements SessionsRepository {
 
   async listSessions(): Promise<SessionEntity[]> {
     return this.sqlite.db
-      .prepare('SELECT * FROM sessions WHERE deleted_at IS NULL ORDER BY created_at DESC')
+      .prepare('SELECT * FROM sessions WHERE deleted_at IS NULL ORDER BY datetime(COALESCE(ended_at, created_at)) DESC')
       .all()
       .map((row) => this.toEntity(row as unknown as SessionRow));
   }

@@ -18,6 +18,11 @@ const db = new DatabaseSync(process.env.SQLITE_DB_PATH);
 db.exec('PRAGMA foreign_keys = OFF');
 
 const now = new Date('2026-05-25T08:00:00.000Z');
+const workdayDates = [
+  '2026-05-11', '2026-05-12', '2026-05-13', '2026-05-14', '2026-05-15',
+  '2026-05-18', '2026-05-19', '2026-05-20', '2026-05-21', '2026-05-22',
+  '2026-05-25'
+];
 const targetEmail = process.env.DEMO_TEACHER_EMAIL ?? 'oneloveq@qq.com';
 const targetUser = db.prepare(`
   SELECT u.id AS user_id, u.display_name, w.id AS workspace_id
@@ -107,9 +112,25 @@ const sessions = sessionPlans.map(([title, subject, questionIndexes, baseRates],
   title: `五年级2班 ${title}`,
   subject,
   teacherName: '陈老师',
-  dateOffset: -39 + index * 2,
+  schedule: buildSchedule(index),
   runs: createRuns(index, questionIndexes, baseRates)
 }));
+
+function buildSchedule(index) {
+  const day = workdayDates[index % workdayDates.length];
+  const slot = Math.floor(index / workdayDates.length);
+  const starts = [
+    [8, 10],
+    [10, 20],
+    [14, 0]
+  ];
+  const [hour, minute] = starts[slot % starts.length];
+  return {
+    createdAt: isoAt(day, Math.max(hour - 1, 7), minute + 20),
+    startedAt: isoAt(day, hour, minute),
+    endedAt: isoAt(day, hour, minute + 50)
+  };
+}
 
 function createRuns(sessionIndex, questionIndexes, baseRates) {
   const firstRun = {
@@ -139,6 +160,19 @@ function isoWithOffset(dayOffset, minuteOffset = 0) {
   return value.toISOString();
 }
 
+function isoAt(dateString, hour, minute = 0) {
+  const value = new Date(`${dateString}T00:00:00.000Z`);
+  value.setUTCHours(hour);
+  value.setUTCMinutes(minute);
+  return value.toISOString();
+}
+
+function addMinutes(isoString, minutes) {
+  const value = new Date(isoString);
+  value.setUTCMinutes(value.getUTCMinutes() + minutes);
+  return value.toISOString();
+}
+
 function stableCorrect(studentIndex, questionIndex, targetRate) {
   const score = ((studentIndex * 37 + questionIndex * 19 + 11) % 100) / 100;
   return score < targetRate;
@@ -154,15 +188,35 @@ function run(statement, ...params) {
 
 db.exec('BEGIN');
 try {
-  db.prepare('DELETE FROM ai_diagnosis_records').run();
-  db.prepare('DELETE FROM answers').run();
-  db.prepare('DELETE FROM assessment_run_questions').run();
-  db.prepare('DELETE FROM assessment_runs').run();
-  db.prepare('DELETE FROM session_questions').run();
-  db.prepare('DELETE FROM sessions').run();
-  db.prepare('DELETE FROM questions').run();
-  db.prepare('DELETE FROM students').run();
-  db.prepare('DELETE FROM classes').run();
+  db.prepare('DELETE FROM ai_diagnosis_records WHERE id = ? OR target_id = ? OR class_id = ?')
+    .run('demo_ai_diagnosis_class_501', classId, classId);
+  db.prepare(`
+    DELETE FROM answers
+    WHERE session_id LIKE 'demo_session_%'
+       OR run_id LIKE 'demo_run_%'
+       OR question_id LIKE 'demo_question_%'
+       OR student_id LIKE 'demo_student_%'
+  `).run();
+  db.prepare(`
+    DELETE FROM assessment_run_questions
+    WHERE run_id LIKE 'demo_run_%'
+       OR question_id LIKE 'demo_question_%'
+  `).run();
+  db.prepare(`
+    DELETE FROM assessment_runs
+    WHERE id LIKE 'demo_run_%'
+       OR session_id LIKE 'demo_session_%'
+  `).run();
+  db.prepare(`
+    DELETE FROM session_questions
+    WHERE session_id LIKE 'demo_session_%'
+       OR question_id LIKE 'demo_question_%'
+  `).run();
+  db.prepare('DELETE FROM sessions WHERE id LIKE ? OR class_id = ?')
+    .run('demo_session_%', classId);
+  db.prepare('DELETE FROM questions WHERE id LIKE ?').run('demo_question_%');
+  db.prepare('DELETE FROM students WHERE id LIKE ? OR class_id = ?').run('demo_student_%', classId);
+  db.prepare('DELETE FROM classes WHERE id = ?').run(classId);
 
   if (!targetUser) {
     db.prepare(`
@@ -253,6 +307,7 @@ try {
   for (const session of sessions) {
     const allQuestionIndexes = [...new Set(session.runs.flatMap((runItem) => runItem.questionIndexes))];
     const firstQuestionId = `demo_question_${String(allQuestionIndexes[0] + 1).padStart(2, '0')}`;
+    const { createdAt, startedAt, endedAt } = session.schedule;
     insertSession.run(
       session.id,
       teacherId,
@@ -261,9 +316,9 @@ try {
       session.teacherName,
       session.subject,
       session.title,
-      isoWithOffset(session.dateOffset, 10),
-      isoWithOffset(session.dateOffset, 50),
-      isoWithOffset(session.dateOffset),
+      startedAt,
+      endedAt,
+      createdAt,
       firstQuestionId,
       workspaceId,
       teacherId
@@ -273,8 +328,8 @@ try {
     });
 
     for (const [runIndex, runItem] of session.runs.entries()) {
-      const runStarted = isoWithOffset(session.dateOffset, 12 + runIndex * 15);
-      const runEnded = isoWithOffset(session.dateOffset, 22 + runIndex * 15);
+      const runStarted = addMinutes(startedAt, runIndex * 15 + 2);
+      const runEnded = addMinutes(runStarted, 10);
       const runFirstQuestionId = `demo_question_${String(runItem.questionIndexes[0] + 1).padStart(2, '0')}`;
       insertRun.run(runItem.id, session.id, runItem.title, runFirstQuestionId, runStarted, runEnded, runStarted);
       runItem.questionIndexes.forEach((questionIndex, orderIndex) => {
@@ -296,7 +351,7 @@ try {
             `C${String(studentIndex + 1).padStart(3, '0')}`,
             chosen,
             isCorrect ? 1 : 0,
-            isoWithOffset(session.dateOffset, 13 + runIndex * 15 + orderIndex * 2 + (studentIndex % 2)),
+            addMinutes(runStarted, 1 + orderIndex * 2 + (studentIndex % 2)),
             Number((0.91 + ((studentIndex + questionIndex) % 8) / 100).toFixed(2)),
             deviceId
           );
