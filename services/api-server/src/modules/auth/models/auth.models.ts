@@ -60,6 +60,7 @@ export interface AuthUserView {
 
 export interface AuthRepository {
   saveUser(entity: UserEntity): Promise<void>;
+  updateUser(entity: UserEntity): Promise<void>;
   findUserByEmail(email: string): Promise<UserEntity | undefined>;
   findUserById(userId: string): Promise<UserEntity | undefined>;
   saveWorkspace(entity: WorkspaceEntity): Promise<void>;

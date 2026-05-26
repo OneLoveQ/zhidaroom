@@ -1,6 +1,6 @@
 import { BadRequestException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
-import { LoginDto, RegisterDto } from './dto/auth.dto.js';
+import { ChangePasswordDto, LoginDto, RegisterDto, UpdateProfileDto } from './dto/auth.dto.js';
 import {
   AuthContext,
   AuthRepository,
@@ -56,6 +56,43 @@ export class AuthService {
     const workspace = await this.repository.findDefaultWorkspace(context.userId);
     if (!user || !workspace) throw new UnauthorizedException('登录已失效');
     return this.toUserView(user, workspace);
+  }
+
+  async updateProfile(token: string, dto: UpdateProfileDto): Promise<AuthUserView> {
+    const context = await this.resolveToken(token);
+    const user = await this.repository.findUserById(context.userId);
+    const workspace = await this.repository.findDefaultWorkspace(context.userId);
+    if (!user || !workspace) throw new UnauthorizedException('登录已失效');
+    const displayName = dto.displayName.trim();
+    if (!displayName) throw new BadRequestException('请输入姓名');
+    const updated: UserEntity = {
+      ...user,
+      displayName,
+      phone: dto.phone?.trim() || undefined,
+      school: dto.school?.trim() || undefined,
+      subject: dto.subject?.trim() || undefined
+    };
+    await this.repository.updateUser(updated);
+    if (workspace.type === 'personal') {
+      await this.repository.saveWorkspace({
+        ...workspace,
+        name: `${updated.displayName}的个人空间`,
+        schoolName: updated.school
+      });
+      return this.toUserView(updated, { ...workspace, name: `${updated.displayName}的个人空间`, schoolName: updated.school });
+    }
+    return this.toUserView(updated, workspace);
+  }
+
+  async changePassword(token: string, dto: ChangePasswordDto): Promise<{ ok: true }> {
+    const context = await this.resolveToken(token);
+    const user = await this.repository.findUserById(context.userId);
+    if (!user) throw new UnauthorizedException('登录已失效');
+    if (!verifyPassword(dto.currentPassword, user.passwordHash)) {
+      throw new BadRequestException('当前密码不正确');
+    }
+    await this.repository.updateUser({ ...user, passwordHash: hashPassword(dto.newPassword) });
+    return { ok: true };
   }
 
   async resolveToken(token: string): Promise<AuthContext> {

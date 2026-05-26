@@ -59,6 +59,28 @@ export const api = {
     return request('/api/auth/logout', { method: 'POST' });
   },
 
+  updateProfile(payload: {
+    displayName: string;
+    school?: string;
+    subject?: string;
+    phone?: string;
+  }): Promise<{ user: AuthUserView }> {
+    return request('/api/auth/me', {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+  },
+
+  changePassword(payload: {
+    currentPassword: string;
+    newPassword: string;
+  }): Promise<{ ok: true }> {
+    return request('/api/auth/password', {
+      method: 'PUT',
+      body: JSON.stringify(payload)
+    });
+  },
+
   createClass(payload: CreateClassPayload = { grade: '七年级', name: '1班' }): Promise<ClassView> {
     return request('/api/classes', {
       method: 'POST',
@@ -242,13 +264,18 @@ function translateMessage(message: string): string {
     'email must be an email': '请输入正确的邮箱地址',
     'password must be a string': '请输入密码',
     'password must be longer than or equal to 6 characters': '密码至少需要 6 位',
+    'newPassword must be longer than or equal to 6 characters': '新密码至少需要 6 位',
+    'currentPassword must be a string': '请输入当前密码',
+    'newPassword must be a string': '请输入新密码',
     'displayName must be a string': '请输入姓名',
+    'displayName should not be empty': '请输入姓名',
     'property displayName should not exist': '登录只需要邮箱和密码',
     'property school should not exist': '登录只需要邮箱和密码',
     'property subject should not exist': '登录只需要邮箱和密码',
     'property phone should not exist': '登录只需要邮箱和密码',
     '邮箱或密码不正确': '邮箱或密码不正确',
     '邮箱已注册': '邮箱已注册',
+    '当前密码不正确': '当前密码不正确',
     '请先登录': '请先登录'
   };
   return map[message] ?? message;

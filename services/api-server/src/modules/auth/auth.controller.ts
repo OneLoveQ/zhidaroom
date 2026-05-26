@@ -1,5 +1,5 @@
-import { Body, Controller, Get, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
-import { LoginDto, RegisterDto } from './dto/auth.dto.js';
+import { Body, Controller, Get, Put, Post, Req, Res, UnauthorizedException } from '@nestjs/common';
+import { ChangePasswordDto, LoginDto, RegisterDto, UpdateProfileDto } from './dto/auth.dto.js';
 import { AuthService } from './auth.service.js';
 import { AuthUserView } from './models/auth.models.js';
 import { AuthenticatedRequest, readAuthToken } from '../../common/auth/auth-request.js';
@@ -38,6 +38,26 @@ export class AuthController {
     const token = readAuthToken(request);
     if (!token) throw new UnauthorizedException('请先登录');
     return { user: await this.authService.me(token) };
+  }
+
+  @Put('me')
+  async updateMe(
+    @Req() request: AuthenticatedRequest,
+    @Body() dto: UpdateProfileDto
+  ): Promise<{ user: AuthUserView }> {
+    const token = readAuthToken(request);
+    if (!token) throw new UnauthorizedException('请先登录');
+    return { user: await this.authService.updateProfile(token, dto) };
+  }
+
+  @Put('password')
+  async changePassword(
+    @Req() request: AuthenticatedRequest,
+    @Body() dto: ChangePasswordDto
+  ): Promise<{ ok: true }> {
+    const token = readAuthToken(request);
+    if (!token) throw new UnauthorizedException('请先登录');
+    return this.authService.changePassword(token, dto);
   }
 
   @Post('logout')

@@ -33,6 +33,15 @@ export class SqliteAuthRepository implements AuthRepository {
       entity.school ?? null, entity.subject ?? null, entity.status, entity.role, entity.createdAt.toISOString());
   }
 
+  async updateUser(entity: UserEntity): Promise<void> {
+    this.sqlite.db.prepare(`
+      UPDATE users
+      SET password_hash = ?, display_name = ?, phone = ?, school = ?, subject = ?, status = ?, role = ?
+      WHERE id = ?
+    `).run(entity.passwordHash, entity.displayName, entity.phone ?? null, entity.school ?? null,
+      entity.subject ?? null, entity.status, entity.role, entity.id);
+  }
+
   async findUserByEmail(email: string): Promise<UserEntity | undefined> {
     const row = this.sqlite.db.prepare('SELECT * FROM users WHERE email = ?').get(email);
     return row ? this.toUser(row as unknown as UserRow) : undefined;
@@ -47,6 +56,9 @@ export class SqliteAuthRepository implements AuthRepository {
     this.sqlite.db.prepare(`
       INSERT INTO workspaces (id, type, name, school_name, owner_user_id, created_at)
       VALUES (?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        name = excluded.name,
+        school_name = excluded.school_name
     `).run(entity.id, entity.type, entity.name, entity.schoolName ?? null, entity.ownerUserId, entity.createdAt.toISOString());
   }
 

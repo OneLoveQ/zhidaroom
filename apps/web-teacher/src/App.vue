@@ -1,14 +1,15 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { BarChart3, BookOpenCheck, ExternalLink, GraduationCap, LogOut } from 'lucide-vue-next';
+import { BarChart3, BookOpenCheck, ExternalLink, GraduationCap, LogOut, ShieldCheck, UserRound } from 'lucide-vue-next';
 import { api } from './api/client';
 import AuthGate from './components/AuthGate.vue';
 import ClassManagement from './components/ClassManagement.vue';
 import LearningAnalysis from './components/LearningAnalysis.vue';
 import QuestionBank from './components/QuestionBank.vue';
+import UserManagement from './components/UserManagement.vue';
 import type { AuthUserView } from './types';
 
-type PageKey = 'classes' | 'questions' | 'analysis';
+type PageKey = 'classes' | 'questions' | 'analysis' | 'account';
 
 const activePage = ref<PageKey>('classes');
 const currentUser = ref<AuthUserView | null>(null);
@@ -18,14 +19,16 @@ const message = ref('管理班级、学生与答题码发放。');
 const pages = [
   { key: 'classes', label: '班级与学生', icon: GraduationCap },
   { key: 'questions', label: '题库管理', icon: BookOpenCheck },
-  { key: 'analysis', label: '学情分析', icon: BarChart3 }
+  { key: 'analysis', label: '学情分析', icon: BarChart3 },
+  { key: 'account', label: '用户管理', icon: UserRound }
 ] as const;
 
 const pageTitle = computed(() => pages.find((page) => page.key === activePage.value)?.label ?? '班级与学生');
 const pageStatus = computed(() => {
   if (activePage.value === 'classes') return '管理班级、学生与答题码发放。';
   if (activePage.value === 'questions') return '维护题库、AI 出题和 Excel 导入导出。';
-  return '汇总班级与学生长期答题表现，生成 AI 诊断基础数据。';
+  if (activePage.value === 'analysis') return '汇总班级与学生长期答题表现，生成 AI 诊断基础数据。';
+  return '维护教师个人信息和登录密码。';
 });
 
 onMounted(() => void loadCurrentUser());
@@ -64,6 +67,13 @@ function openScreenPage(): void {
     : `${window.location.origin}/screen/`;
   window.location.assign(url);
 }
+
+function openAdminPage(): void {
+  const url = window.location.port === '5173'
+    ? `${window.location.protocol}//${window.location.hostname}:5175/admin/`
+    : `${window.location.origin}/admin/`;
+  window.location.assign(url);
+}
 </script>
 
 <template>
@@ -87,6 +97,10 @@ function openScreenPage(): void {
         </button>
       </nav>
       <div class="sidebar-actions">
+        <button v-if="currentUser.role === 'platform_admin'" class="ghost" type="button" @click="openAdminPage">
+          <ShieldCheck :size="18" />
+          平台管理
+        </button>
         <button class="ghost" type="button" @click="openScreenPage">
           <ExternalLink :size="18" />
           返回大屏
@@ -108,7 +122,8 @@ function openScreenPage(): void {
       </header>
       <ClassManagement v-if="activePage === 'classes'" @class-ready="markClassReady" />
       <QuestionBank v-else-if="activePage === 'questions'" @question-ready="markQuestionReady" />
-      <LearningAnalysis v-else />
+      <LearningAnalysis v-else-if="activePage === 'analysis'" />
+      <UserManagement v-else :user="currentUser" @updated="currentUser = $event" />
     </section>
   </main>
 </template>

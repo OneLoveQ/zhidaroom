@@ -11,6 +11,7 @@ export interface AuthUserView {
   phone?: string;
   school?: string;
   subject?: string;
+  role: 'teacher' | 'platform_admin';
   workspaceId: string;
   workspaceName: string;
   workspaceType: 'personal' | 'school';

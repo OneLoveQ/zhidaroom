@@ -1,0 +1,68 @@
+.account-page {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.account-card {
+  background: #ffffff;
+  border: 1px solid #dde4ea;
+  border-radius: 8px;
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+}
+
+.account-heading {
+  align-items: start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.account-heading h3,
+.account-heading p {
+  margin: 0;
+}
+
+.account-heading p {
+  color: #6d7885;
+  margin-top: 5px;
+}
+
+.role-badge {
+  background: #edf7f2;
+  border: 1px solid #cce5d9;
+  border-radius: 999px;
+  color: #246347;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 7px 10px;
+  white-space: nowrap;
+}
+
+.account-form {
+  display: grid;
+  gap: 12px;
+}
+
+.account-form button {
+  background: #18212b;
+  color: #ffffff;
+  justify-self: start;
+}
+
+.account-form button:hover {
+  background: #253241;
+}
+
+@media (max-width: 960px) {
+  .account-page {
+    grid-template-columns: 1fr;
+  }
+
+  .account-heading {
+    display: grid;
+  }
+}
