@@ -15,13 +15,14 @@
 
 ## 访问地址
 
+- 官网首页：`https://zhida.foun.fun/`
 - 大屏端：`https://zhida.foun.fun/screen/`
 - 教师后台：`https://zhida.foun.fun/teacher/`
 - 手机扫码端：`https://zhida.foun.fun/scanner/`
 - 平台总后台：`https://zhida.foun.fun/admin/`
 - API 健康检查：`https://zhida.foun.fun/api/health`
 
-根地址 `https://zhida.foun.fun/` 会跳转到 `/screen/`。
+根地址 `https://zhida.foun.fun/` 展示官网首页。
 
 ## 服务器专属文件
 
@@ -48,7 +49,7 @@ SCANNER_PUBLIC_BASE_URL="https://zhida.foun.fun/scanner"
 宝塔站点 `zhida.foun.fun` 的 Nginx 配置保留 SSL 证书段，并加入以下业务路由：
 
 ```text
-/          -> /screen/
+/          -> apps/homepage/dist
 /screen/   -> apps/web-screen/dist
 /teacher/  -> apps/web-teacher/dist
 /scanner/  -> apps/mobile-scanner/dist
@@ -97,8 +98,8 @@ cd /www/wwwroot/zhidaroom
 
 1. 备份 `data/zhida.dev.db`
 2. `git pull --ff-only`
-3. 安装 API、教师端、大屏端、扫码端、总后台依赖
-4. 构建 API 和四个前端
+3. 安装 API、官网首页、教师端、大屏端、扫码端、总后台依赖
+4. 构建 API 和五个前端
 5. 尝试重启 PM2 项目 `api_server`
 
 如果脚本提示找不到 PM2 项目，就到宝塔 Node 项目里手动重启 `api_server`。
@@ -138,12 +139,14 @@ export PATH=/www/server/nodejs/v22.22.3/bin:$PATH
 cd /www/wwwroot/zhidaroom
 
 ./scripts/api/install.sh
+./scripts/web/homepage.sh install
 ./scripts/web/teacher-install.sh
 ./scripts/web/screen-install.sh
 ./scripts/mobile/scanner-install.sh
 ./scripts/admin-console/run.sh install
 
 ./scripts/api/build.sh
+./scripts/web/homepage.sh build
 ./scripts/web/teacher-build.sh
 ./scripts/web/screen-build.sh
 ./scripts/mobile/scanner-build.sh
@@ -162,6 +165,7 @@ curl https://zhida.foun.fun/api/health
 
 浏览器检查：
 
+- `https://zhida.foun.fun/`
 - `https://zhida.foun.fun/screen/`
 - `https://zhida.foun.fun/teacher/`
 - `https://zhida.foun.fun/scanner/`

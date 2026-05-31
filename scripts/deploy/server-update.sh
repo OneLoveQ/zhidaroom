@@ -37,6 +37,7 @@ git pull --ff-only
 echo "==> 安装依赖"
 ensure_executable_permissions
 ./scripts/api/install.sh
+./scripts/web/homepage.sh install
 ./scripts/web/teacher-install.sh
 ./scripts/web/screen-install.sh
 ./scripts/mobile/scanner-install.sh
@@ -45,6 +46,7 @@ ensure_executable_permissions
 echo "==> 构建服务与前端"
 ensure_executable_permissions
 ./scripts/api/build.sh
+./scripts/web/homepage.sh build
 ./scripts/web/teacher-build.sh
 ./scripts/web/screen-build.sh
 ./scripts/mobile/scanner-build.sh

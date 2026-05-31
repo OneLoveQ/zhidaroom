@@ -47,6 +47,7 @@ echo "日志目录：${LOG_DIR}"
 echo
 
 start_service "API 服务" 3001 "scripts/api/dev.sh"
+start_service "官网首页" 5176 "scripts/web/homepage.sh" dev
 start_service "教师管理端" 5173 "scripts/web/teacher-dev.sh"
 start_service "课堂大屏端" 5174 "scripts/web/screen-dev.sh"
 start_service "平台后台" 5175 "scripts/admin-console/run.sh" dev
@@ -55,6 +56,7 @@ start_service "手机扫码端" 5177 "scripts/mobile/scanner-dev.sh"
 echo
 echo "==> 启动命令已发出，稍等几秒后访问："
 echo "API 健康检查：http://localhost:3001/api/health"
+echo "官网首页：http://localhost:5176/"
 echo "教师管理端：http://localhost:5173/teacher/"
 echo "课堂大屏端：http://localhost:5174/screen/"
 echo "平台后台：http://localhost:5175/admin/"

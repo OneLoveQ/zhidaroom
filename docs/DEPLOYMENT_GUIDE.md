@@ -7,6 +7,7 @@
 正式访问地址建议统一使用 HTTPS 域名：
 
 - 课堂大屏端：`https://zhida.foun.fun/screen/`
+- 官网首页：`https://zhida.foun.fun/`
 - 教师管理端：`https://zhida.foun.fun/teacher/`
 - 教师手机扫码端：`https://zhida.foun.fun/scanner/`
 - 平台后台：`https://zhida.foun.fun/admin/`
@@ -21,6 +22,7 @@
 | 模块 | 目录 | 说明 |
 | --- | --- | --- |
 | 后端 API | `services/api-server` | 提供账号、班级、题库、课堂、扫码上传、报告和 AI 诊断接口 |
+| 官网首页 | `apps/homepage` | 对外介绍项目定位、课堂闭环、核心能力和数据安全 |
 | 教师管理端 | `apps/web-teacher` | 教师维护班级、学生、题库和下载答题码 |
 | 课堂大屏端 | `apps/web-screen` | 教室电脑或一体机打开，用于扫码绑定、实时统计和复盘 |
 | 手机扫码端 | `apps/mobile-scanner` | 教师手机扫码进入，用于创建课堂和采集答题卡 |
@@ -110,12 +112,14 @@ MIMO_ALLOW_INSECURE_TLS="false"
 cd /www/wwwroot/zhidaroom
 
 ./scripts/api/install.sh
+./scripts/web/homepage.sh install
 ./scripts/web/teacher-install.sh
 ./scripts/web/screen-install.sh
 ./scripts/mobile/scanner-install.sh
 ./scripts/admin-console/run.sh install
 
 ./scripts/api/build.sh
+./scripts/web/homepage.sh build
 ./scripts/web/teacher-build.sh
 ./scripts/web/screen-build.sh
 ./scripts/mobile/scanner-build.sh
@@ -126,6 +130,7 @@ cd /www/wwwroot/zhidaroom
 
 | 模块 | 构建产物 |
 | --- | --- |
+| 官网首页 | `apps/homepage/dist` |
 | 教师管理端 | `apps/web-teacher/dist` |
 | 课堂大屏端 | `apps/web-screen/dist` |
 | 手机扫码端 | `apps/mobile-scanner/dist` |
@@ -137,7 +142,7 @@ cd /www/wwwroot/zhidaroom
 Nginx 需要把不同路径转发到对应前端目录或 API 服务：
 
 ```text
-/          -> /screen/
+/          -> apps/homepage/dist
 /screen/   -> apps/web-screen/dist
 /teacher/  -> apps/web-teacher/dist
 /scanner/  -> apps/mobile-scanner/dist
@@ -147,7 +152,7 @@ Nginx 需要把不同路径转发到对应前端目录或 API 服务：
 
 配置重点：
 
-1. 根路径 `/` 建议跳转到 `/screen/`。
+1. 根路径 `/` 承载官网首页，并支持 SPA 回退到 `apps/homepage/dist/index.html`。
 2. 前端路径需要支持 SPA 回退到对应 `index.html`。
 3. `/api/` 必须反向代理到本机 `3001` 端口。
 4. HTTPS 证书应绑定正式域名 `zhida.foun.fun`。
@@ -201,6 +206,7 @@ curl https://zhida.foun.fun/api/health
 
 浏览器逐项检查：
 
+- `https://zhida.foun.fun/`
 - `https://zhida.foun.fun/screen/`
 - `https://zhida.foun.fun/teacher/`
 - `https://zhida.foun.fun/scanner/`

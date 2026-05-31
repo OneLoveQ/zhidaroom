@@ -6,6 +6,7 @@
 
 ## 本地运行
 
+- 官网首页：`bash scripts/web/homepage.sh dev`
 - API 服务：`bash scripts/api/dev.sh`
 - 教师 Web 端：`bash scripts/web/teacher-dev.sh`
 - 课堂大屏端：`bash scripts/web/screen-dev.sh`
