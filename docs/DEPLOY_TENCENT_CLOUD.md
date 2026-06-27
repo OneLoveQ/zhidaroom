@@ -9,8 +9,8 @@
 - 域名：`zhida.foun.fun`
 - 项目目录：`/www/wwwroot/zhidaroom`
 - Node 路径：`/www/server/nodejs/v22.22.3/bin`
-- API 端口：`3001`
-- API 进程：宝塔 Node 项目 `api_server`
+- API 端口：`7301`
+- API 进程：PM2 项目 `api_server`
 - 扫码端公开基地址：`SCANNER_PUBLIC_BASE_URL=https://zhida.foun.fun/scanner`
 
 ## 访问地址
@@ -54,7 +54,7 @@ SCANNER_PUBLIC_BASE_URL="https://zhida.foun.fun/scanner"
 /teacher/  -> apps/web-teacher/dist
 /scanner/  -> apps/mobile-scanner/dist
 /admin/    -> apps/admin-console/dist
-/api/      -> http://127.0.0.1:3001
+/api/      -> http://127.0.0.1:7301
 ```
 
 如果以后在宝塔面板重新保存站点配置，可能会覆盖这些路由。覆盖后需要把上述路由重新合并回站点配置。
@@ -100,9 +100,9 @@ cd /www/wwwroot/zhidaroom
 2. `git pull --ff-only`
 3. 安装 API、官网首页、教师端、大屏端、扫码端、总后台依赖
 4. 构建 API 和五个前端
-5. 尝试重启 PM2 项目 `api_server`
+5. 优先重启 PM2 项目 `api_server`，找不到时自动创建
 
-如果脚本提示找不到 PM2 项目，就到宝塔 Node 项目里手动重启 `api_server`。
+如果当前环境没有 PM2，脚本才会降级调用宝塔 Node 启动脚本。
 
 也可以从本机一条命令远程触发更新：
 
@@ -153,7 +153,9 @@ cd /www/wwwroot/zhidaroom
 ./scripts/admin-console/run.sh build
 ```
 
-前端构建完成后 Nginx 不需要重启。API 构建完成后需要在宝塔 Node 项目里重启 `api_server`，或通过 PM2 重启。
+前端构建完成后 Nginx 不需要重启。API 构建完成后通过 PM2 重启 `api_server`。
+
+当前服务器还部署了其他项目，智答 API 固定使用 `7301` 作为本机端口。后续部署新项目时，应先用 `ss -lntp` 检查端口占用，避免复用 `7301`。
 
 ## 验证清单
 

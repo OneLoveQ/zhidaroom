@@ -62,6 +62,10 @@ echo "课堂大屏端：http://localhost:5174/screen/"
 echo "平台后台：http://localhost:5175/admin/"
 echo "手机扫码端：http://localhost:5177/scanner/"
 echo "测试码页面：http://localhost:5177/scanner/?testCodes"
+echo "扫码模拟器：http://localhost:5178/（按需运行 scripts/simulator/dev.sh）"
+echo "扫码调试页：http://localhost:5179/（按需运行 scripts/simulator/scan-debug-dev.sh）"
+echo
+echo "说明：本地 API 使用 3001；腾讯云生产 API 使用 7301。"
 echo
 echo "按 Ctrl+C 可停止全部本地服务。"
 

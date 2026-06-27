@@ -53,19 +53,20 @@ ensure_executable_permissions
 ./scripts/admin-console/run.sh build
 
 echo "==> 重启 API"
-if [ -f "${BT_NODE_SCRIPT}" ]; then
+if command -v pm2 >/dev/null 2>&1; then
+  if pm2 describe "${API_PM2_NAME}" >/dev/null 2>&1; then
+    pm2 restart "${API_PM2_NAME}" --update-env
+  else
+    pm2 start "${APP_DIR}/scripts/api/start.sh" --name "${API_PM2_NAME}" --cwd "${APP_DIR}"
+  fi
+  pm2 save >/dev/null 2>&1 || true
+elif [ -f "${BT_NODE_SCRIPT}" ]; then
   if [ -f "${BT_NODE_PID_FILE}" ]; then
     kill "$(cat "${BT_NODE_PID_FILE}")" 2>/dev/null || true
   fi
   bash "${BT_NODE_SCRIPT}"
-elif command -v pm2 >/dev/null 2>&1; then
-  if pm2 describe "${API_PM2_NAME}" >/dev/null 2>&1; then
-    pm2 restart "${API_PM2_NAME}"
-  else
-    echo "未找到 PM2 项目 ${API_PM2_NAME}，请在宝塔 Node 项目中重启 API。"
-  fi
 else
-  echo "当前 PATH 中没有 pm2，请在宝塔 Node 项目中重启 API。"
+  echo "当前 PATH 中没有 pm2，也未找到宝塔 Node 启动脚本，请手动重启 API。"
 fi
 
 echo "==> 更新完成"

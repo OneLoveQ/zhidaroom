@@ -4,9 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "../web-teacher/node_modules/.bin/vite --host 0.0.0.0 --port 5176",
+    "dev": "../web-teacher/node_modules/.bin/vite --host 0.0.0.0 --port 5179",
     "build": "../web-teacher/node_modules/.bin/vue-tsc --noEmit && ../web-teacher/node_modules/.bin/vite build",
-    "preview": "../web-teacher/node_modules/.bin/vite preview --host 0.0.0.0 --port 4176"
+    "preview": "../web-teacher/node_modules/.bin/vite preview --host 0.0.0.0 --port 4179"
   },
   "dependencies": {
     "@vitejs/plugin-vue": "^6.0.1",

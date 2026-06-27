@@ -40,7 +40,7 @@
 - 已配置 Nginx。
 - 已配置 HTTPS 证书。
 - 项目目录：`/www/wwwroot/zhidaroom`
-- API 运行端口：`3001`
+- API 运行端口：`7301`
 - 数据库：SQLite，默认文件为 `data/zhida.dev.db`
 
 服务器需要保留以下目录：
@@ -86,7 +86,7 @@ services/api-server/.env
 可参考 `services/api-server/.env.example` 创建。正式环境至少需要配置：
 
 ```text
-API_PORT=3001
+API_PORT=7301
 DATABASE_URL="file:../../../data/zhida.dev.db"
 SCANNER_PUBLIC_BASE_URL="https://zhida.foun.fun/scanner"
 MIMO_API_URL="https://token-plan-cn.xiaomimimo.com/v1/chat/completions"
@@ -147,14 +147,14 @@ Nginx 需要把不同路径转发到对应前端目录或 API 服务：
 /teacher/  -> apps/web-teacher/dist
 /scanner/  -> apps/mobile-scanner/dist
 /admin/    -> apps/admin-console/dist
-/api/      -> http://127.0.0.1:3001
+/api/      -> http://127.0.0.1:7301
 ```
 
 配置重点：
 
 1. 根路径 `/` 承载官网首页，并支持 SPA 回退到 `apps/homepage/dist/index.html`。
 2. 前端路径需要支持 SPA 回退到对应 `index.html`。
-3. `/api/` 必须反向代理到本机 `3001` 端口。
+3. `/api/` 必须反向代理到本机 `7301` 端口。
 4. HTTPS 证书应绑定正式域名 `zhida.foun.fun`。
 5. 修改 Nginx 配置后需要重新加载 Nginx。
 
@@ -281,7 +281,7 @@ SCANNER_PUBLIC_BASE_URL="https://zhida.foun.fun/scanner"
 处理方法：
 
 1. 确认 API 进程已启动。
-2. 确认 `API_PORT=3001`。
+2. 确认 `API_PORT=7301`。
 3. 检查 Nginx `/api/` 反向代理配置。
 4. 查看服务器 `logs/` 或宝塔 Node 项目日志。
 
