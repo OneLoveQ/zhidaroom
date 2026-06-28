@@ -187,12 +187,18 @@ export class AiService {
         D: item.options?.D?.trim()
       },
       explanation: item.explanation?.trim(),
-      knowledgePoints: (item.knowledgePoints ?? []).map((value) => value.trim()).filter(Boolean),
+      knowledgePoints: this.normalizeTextList(item.knowledgePoints),
       difficulty: ['基础', '巩固', '提升'].includes(item.difficulty) ? item.difficulty : '基础',
-      commonMistakes: (item.commonMistakes ?? []).map((value) => value.trim()).filter(Boolean)
+      commonMistakes: this.normalizeTextList(item.commonMistakes)
     };
     this.validateGeneratedQuestion(normalized);
     return normalized;
+  }
+
+  private normalizeTextList(value: string[] | string | undefined): string[] {
+    return (Array.isArray(value) ? value : value ? [value] : [])
+      .map((item) => item.trim())
+      .filter(Boolean);
   }
 
   private validateGeneratedQuestion(item: GeneratedQuestionItem): void {

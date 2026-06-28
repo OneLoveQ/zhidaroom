@@ -55,7 +55,7 @@ export class MimoClient {
   private async completeMessages(messages: MimoMessage[]): Promise<string> {
     const apiUrl = process.env.MIMO_API_URL ?? 'https://token-plan-cn.xiaomimimo.com/v1/chat/completions';
     const apiKey = process.env.MIMO_API_KEY;
-    const model = process.env.MIMO_MODEL ?? 'mimo-v2.5';
+    const model = process.env.MIMO_MODEL ?? 'mimo-v2.5-pro';
 
     if (!apiUrl || !apiKey) {
       throw new ServiceUnavailableException('大模型服务尚未配置');

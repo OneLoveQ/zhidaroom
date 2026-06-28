@@ -8,24 +8,40 @@ import {
   StudentLearningDetailView
 } from '../src/modules/reports/models/report.models.js';
 
+const generatedQuestion = {
+  stem: '下列不等式变形正确的是？',
+  options: {
+    A: '两边同乘负数，不等号方向不变',
+    B: '两边同加同一个数，不等号方向改变',
+    C: '两边同乘正数，不等号方向不变',
+    D: '两边同除正数，不等号方向改变'
+  },
+  answer: 'C',
+  explanation: '不等式两边同乘正数，不等号方向不变。',
+  knowledgePoints: ['不等式性质'],
+  difficulty: '基础',
+  commonMistakes: ['混淆正数和负数对不等号方向的影响']
+};
+
 class FakeMimoClient extends MimoClient {
+  override complete(): Promise<string> {
+    return Promise.resolve(
+      JSON.stringify({
+        items: [generatedQuestion]
+      })
+    );
+  }
+}
+
+class StringKnowledgeMimoClient extends MimoClient {
   override complete(): Promise<string> {
     return Promise.resolve(
       JSON.stringify({
         items: [
           {
-            stem: '下列不等式变形正确的是？',
-            options: {
-              A: '两边同乘负数，不等号方向不变',
-              B: '两边同加同一个数，不等号方向改变',
-              C: '两边同乘正数，不等号方向不变',
-              D: '两边同除正数，不等号方向改变'
-            },
-            answer: 'C',
-            explanation: '不等式两边同乘正数，不等号方向不变。',
-            knowledgePoints: ['不等式性质'],
-            difficulty: '基础',
-            commonMistakes: ['混淆正数和负数对不等号方向的影响']
+            ...generatedQuestion,
+            knowledgePoints: '不等式性质',
+            commonMistakes: '混淆正数和负数对不等号方向的影响'
           }
         ]
       })
@@ -193,6 +209,22 @@ describe('AiService', () => {
     expect(result.record.status).toBe('success');
     expect(result.items[0]?.aiGenerated).toBe(true);
     expect(result.items[0]?.reviewStatus).toBe('pending');
+  });
+
+  it('兼容大模型把知识点返回成字符串', async () => {
+    const service = new AiService(new StringKnowledgeMimoClient());
+
+    const result = await service.generateQuestions({
+      subject: '数学',
+      grade: '七年级',
+      knowledgePoint: '不等式性质',
+      count: 1,
+      difficulty: '基础',
+      questionType: 'single_choice'
+    });
+
+    expect(result.items[0]?.knowledgePoints).toEqual(['不等式性质']);
+    expect(result.items[0]?.commonMistakes).toEqual(['混淆正数和负数对不等号方向的影响']);
   });
 
   it('大模型未配置时使用匿名聚合数据生成规则兜底诊断', async () => {
