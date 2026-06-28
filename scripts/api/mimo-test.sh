@@ -2,7 +2,7 @@
 set -euo pipefail
 
 API_BASE="${MIMO_API_BASE:-https://token-plan-cn.xiaomimimo.com/v1}"
-MODEL="${MIMO_MODEL:-mimo-v2.5-pro}"
+MODEL="${MIMO_MODEL:-mimo-v2.5}"
 
 if [[ -z "${MIMO_API_KEY:-}" ]]; then
   echo "请先设置 MIMO_API_KEY 环境变量。"
@@ -15,7 +15,7 @@ import { URL } from 'node:url';
 
 const apiBase = process.env.MIMO_API_BASE ?? 'https://token-plan-cn.xiaomimimo.com/v1';
 const apiKey = process.env.MIMO_API_KEY;
-const model = process.env.MIMO_MODEL ?? 'mimo-v2.5-pro';
+const model = process.env.MIMO_MODEL ?? 'mimo-v2.5';
 const allowInsecureTls = process.env.MIMO_ALLOW_INSECURE_TLS === 'true';
 
 function post(path, payload) {
